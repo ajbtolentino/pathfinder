@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
-import INode, { NodeType } from "../models/INode";
-import ITable from "../models/ITable"
+import INode, { NodeState, NodeType } from "../models/INode";
 
 export const useGrid = (rows: number, columns: number) => {
-    const [table, setTable] = useState<ITable>();
+    const [grid, setGrid] = useState<INode[][]>([]);
     const [startNode, setStartNode] = useState<INode>();
 
     useEffect(() => {
+        initialize();
+    }, []);
+
+    useEffect(() => {
+        initialize();
+    }, [rows,columns]);
+
+    const initialize = () => {
         const tempGrid: INode[][] = [];
 
         for(let x = 0; x < rows; x++){
@@ -14,39 +21,36 @@ export const useGrid = (rows: number, columns: number) => {
 
             for(let y = 0; y < columns; y++){
                 currentRow.push({
-                    x: x,
-                    y: y,
-                    type: "empty"
+                    row: x,
+                    column: y,
+                    type: "empty",
+                    state: "unvisited"
                 });
             }
 
             tempGrid.push(currentRow);
         };
 
-        setTable({
-            columns: columns,
-            rows: rows,
-            grid: [...tempGrid]
-        });
-    }, []);
+        setGrid([...tempGrid]);
+    };
 
     const setNodeType = (node: INode, type: NodeType) => {
-        const tempGrid = table!.grid; 
+        const tempGrid = [...grid]; 
 
-        if(type === "start") { 
-            setStartNode(node);
+        if(startNode && type === "start") 
+            tempGrid[startNode.row][startNode.column] = {...startNode, type: "empty"};
 
-            if(startNode && startNode.type === "start") 
-                tempGrid[startNode.x][startNode.y] = {...startNode, type: "empty"};
-        }
+        if(type === "start") setStartNode(node);
 
-        tempGrid[node.x][node.y] = {...node, type: type};
+        tempGrid[node.row][node.column] = {...node, type: type};
 
-        if(table) setTable({...table, grid: tempGrid});
+        setGrid(() => [...tempGrid]);
     };
 
     return {
-        table,
-        setNodeType
+        grid,
+        startNode,
+        setNodeType,
+        clear: initialize
     };
 };

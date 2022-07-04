@@ -1,7 +1,9 @@
-export type NodeType = "start" | "end" | "empty" | "path"
+export type NodeType = "start" | "wall" | "empty" | "path"
+export type NodeState = "visited" | "unvisited" | "pointed" | "queued";
 
 export default interface INode {
-    x: number;
-    y: number;
+    row: number;
+    column: number;
     type: NodeType;
+    state: NodeState;
 };

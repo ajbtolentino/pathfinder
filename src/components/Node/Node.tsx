@@ -1,39 +1,42 @@
 import { Grid, Paper } from "@mui/material";
 import { useEffect, useState } from "react";
-import INode, { NodeType } from "../../models/INode";
+import INode, { NodeState, NodeType } from "../../models/INode";
 
 export interface INodeProps {
     node: INode;
     size: number;
     onClick: () => void;
+    hovered?: (node: INode) => void;
 }
 
 export const Node: React.FC<INodeProps> = (props) => {
-    const [type, setType] = useState<NodeType>(props.node.type);
+    const [node, setNode] = useState<INode>({...props.node});
 
     useEffect(() => {
-        setType(props.node.type);
+        setNode({...props.node});
     }, [props.node]);
 
-    const getStyle = () => {
-        let bgColor = "";
+    const getStateStyle = () => {
+        return `node-state-${node.state}`;
+    };
 
-        if(type === "end") bgColor = "red";
-        if(type === "start") bgColor = "green";
+    const getTypeStyle = () => {
+        return `node-type-${node.type}`;
+    };
 
-        return {
-            width: props.size, 
-            height: props.size, 
-            border: "2px solid black", 
-            margin: 1, 
-            backgroundColor: bgColor
-        };
+    const getClassName = () => {
+        return `node node-state-transition ${getStateStyle()} ${getTypeStyle()}`;
+    };
+
+    const handleMouseEnter = () => {
+        if(props.hovered) props.hovered(props.node);
     };
 
     return (
-        <Grid item onClick={() => props.onClick()}>
-            <div style={getStyle()}>
-            </div>
+        <Grid item width={props.size} height={props.size} 
+              onClick={() => props.onClick()} 
+              onMouseEnter={handleMouseEnter} 
+              className={getClassName()}>
         </Grid>
     )
 };
