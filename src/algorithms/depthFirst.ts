@@ -1,15 +1,15 @@
 import NeighborHelper from "../helpers/NeighborHelper";
-import INode, { NodeState } from "../models/INode";
-
-export type Direction = "top" | "right" | "bottom" | "left";
+import INode, { NodeState, NodeType } from "../models/INode";
 
 export class DepthFirst {
+    traverse: NodeType;
     graph: INode[][];
     totalIterations: number;
-    stateChanged?: (row: number, column: number, state: NodeState) => Promise<any>;
-    done?: (graph: INode[][]) => void;
+    nodeStateChanged?: (row: number, column: number, state: NodeState) => Promise<any>;
+    completed?: (graph: INode[][]) => void;
 
-    constructor(graph: INode[][], startNode: INode){
+    constructor(graph: INode[][], traverse: NodeType){
+        this.traverse = traverse;
         this.totalIterations = 0;
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
@@ -18,59 +18,85 @@ export class DepthFirst {
         })];
     };
     
-    stack = async (node: INode) => {
-        const stack: INode[] = [node];
+    stack = async (startNode: INode) => {
+        this.totalIterations = 0;
+
+        const stack: INode[] = [startNode];
 
         while(stack.length > 0) {
-            this.totalIterations++;
-
             const current = stack.shift();
 
             if(!current) continue;
 
-            if(this.stateChanged) await this.stateChanged(current.row, current.column, "pointed");
+            await this.movePointer(current);
 
-            if(this.graph[current.row][current.column].state === "visited") {
-                if(this.stateChanged) await this.stateChanged(current.row, current.column, "visited");
-                return;
-            };
+            if(await this.isVisited(current)) continue;
 
-            this.graph[current.row][current.column].state = "visited";
-            if(this.stateChanged) await this.stateChanged(current.row, current.column, "visited");
+            this.updateNodeState(current, "visited");
 
             const neighbors = NeighborHelper.getNeighbors(this.graph, current); 
 
             for(let neighbor of neighbors) {
-                if(neighbor.state === "visited" || neighbor.type !== "empty") continue;
-                if(this.stateChanged) await this.stateChanged(neighbor.row, neighbor.column, "queued");
+                if(await this.isVisited(neighbor) || neighbor.type !== this.traverse) continue;
                 
                 stack.unshift(neighbor);
+
+                await this.queued(neighbor);
             }
+
+            this.totalIterations++;
         }
 
-        if(this.done) this.done(this.graph);
+        if(this.completed) this.completed(this.graph);
     };
 
     recursive = async (node: INode) => {
-        this.totalIterations++;
-
         if(!node) return;
+        
+        await this.movePointer(node);
 
-        if(this.stateChanged) await this.stateChanged(node.row, node.column, "pointed");
+        if(await this.isVisited(node)) return;
 
-        if(this.graph[node.row][node.column].state === "visited") {
-            if(this.stateChanged) await this.stateChanged(node.row, node.column, "visited");
-            return;
-        };
-
-        this.graph[node.row][node.column].state = "visited";
-        if(this.stateChanged) await this.stateChanged(node.row, node.column, "visited");
+        this.updateNodeState(node, "visited");
 
         const neighbors = NeighborHelper.getNeighbors(this.graph, node); 
 
         for(let neighbor of neighbors) {
-            if(neighbor.state === "visited" || neighbor.type !== "empty") continue;
+            const isVisited = await this.isVisited(neighbor);
+
+            if(isVisited || neighbor.type !== this.traverse) continue;
+
             await this.recursive(neighbor);
         }
+
+        this.totalIterations++;
+    };
+
+    movePointer = async (node: INode) => {
+        const tempState = node.state;
+        if(this.nodeStateChanged) await this.nodeStateChanged(node.row, node.column, "pointed");
+
+        if(node.state === "visited"){
+            if(this.nodeStateChanged) await this.nodeStateChanged(node.row, node.column, "visited");
+        }
+        else {
+            if(this.nodeStateChanged) await this.nodeStateChanged(node.row, node.column, tempState);
+        }
+    };
+
+    updateNodeState = async (node: INode, state: NodeState) => {
+        this.graph[node.row][node.column].state = state;
+
+        if(this.nodeStateChanged) await this.nodeStateChanged(node.row, node.column, state);
+    }
+
+    queued = async (node: INode) => {
+        if(this.nodeStateChanged) await this.nodeStateChanged(node.row, node.column, "queued");
+    }
+
+    isVisited = async (node: INode): Promise<boolean> => {
+        if(this.graph[node.row][node.column].state === "visited") return true;
+
+        return false;
     }
 } 

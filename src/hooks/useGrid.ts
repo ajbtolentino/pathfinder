@@ -23,7 +23,7 @@ export const useGrid = (rows: number, columns: number) => {
                 currentRow.push({
                     row: x,
                     column: y,
-                    type: "empty",
+                    type: "path",
                     state: "unvisited"
                 });
             }
@@ -34,11 +34,26 @@ export const useGrid = (rows: number, columns: number) => {
         setGrid([...tempGrid]);
     };
 
+    const reset = () => {
+        const tempGrid: INode[][] = [...grid.map(rowNodes => {
+            return [...rowNodes.map(node => {
+                const newNode: INode = {
+                    ...node,
+                    state: "unvisited"
+                }
+
+                return newNode;
+            })];
+        })];
+
+        setGrid(() => [...tempGrid]);
+    };
+
     const setNodeType = (node: INode, type: NodeType) => {
         const tempGrid = [...grid]; 
 
         if(startNode && type === "start") 
-            tempGrid[startNode.row][startNode.column] = {...startNode, type: "empty"};
+            tempGrid[startNode.row][startNode.column] = {...startNode, type: "path"};
 
         if(type === "start") setStartNode(node);
 
@@ -51,6 +66,7 @@ export const useGrid = (rows: number, columns: number) => {
         grid,
         startNode,
         setNodeType,
-        clear: initialize
+        reset,
+        initialize
     };
 };

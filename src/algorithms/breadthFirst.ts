@@ -1,13 +1,15 @@
 import NeighborHelper from "../helpers/NeighborHelper";
-import INode, { NodeState } from "../models/INode";
+import INode, { NodeState, NodeType } from "../models/INode";
 
 export class BreadthFirst {
+    traverse: NodeType;
     graph: INode[][];
     iteration: number;
     done?: (graph: INode[][]) => void;
     stateChanged?: (row: number, column: number, state: NodeState) => Promise<any>;
 
-    constructor(graph: INode[][]) {
+    constructor(graph: INode[][], traverse: NodeType) {
+        this.traverse = traverse;
         this.iteration = 0;
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
@@ -32,9 +34,8 @@ export class BreadthFirst {
 
             //Revert to visited
             if(this.graph[current.row][current.column].state === "visited") {
-                if(this.stateChanged) 
-                    await this.stateChanged(current.row, current.column, "visited");
-                    
+                if(this.stateChanged) await this.stateChanged(current.row, current.column, "visited");
+
                 continue;
             };
 
@@ -46,10 +47,13 @@ export class BreadthFirst {
             const neighbors = NeighborHelper.getNeighbors(this.graph, current); 
 
             for(let neighbor of neighbors) {
-                if(neighbor.state === "visited" || neighbor.type !== "empty") continue;
-                if(this.stateChanged) await this.stateChanged(neighbor.row, neighbor.column, "queued");
+                if(neighbor.state === "queued" || neighbor.state === "visited" || neighbor.type !== this.traverse) continue;
+                
+                this.graph[neighbor.row][neighbor.column].state = "queued";                
                 
                 queue.unshift(neighbor);
+
+                if(this.stateChanged) await this.stateChanged(neighbor.row, neighbor.column, "queued");
             }
         }
 

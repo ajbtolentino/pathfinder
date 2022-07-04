@@ -8,27 +8,42 @@
 }
 
 .node-state-pointed {
-  background-color: aqua;
-  transition: all 1ms;
+  background-color: aqua !important;
+  transition: all 5ms;
 }
 
 .node-state-queued {
-  background-color: darksalmon;
+  background-color: lightpink !important;
+  transition: all 5ms;
 }
 
 .node-state-visited {
-  background-color: darkcyan;
-}
-
-.node-type-wall {
-  background-color: chocolate;
+  background-color: darkcyan !important;
 }
 
 .node-type-start {
   background-color: chartreuse !important;
 }
 
+.node-type-wall {
+  background-color: chocolate;
+}
+
 .node-type-end {
+  background-color: crimson;
+}
+
+.node-hover-type-start {
+  background-color: chartreuse;
+  transition: all 1ms;
+}
+
+.node-hover-type-wall {
+  background-color: chocolate;
+  transition: all 1ms;
+}
+
+.node-hover-type-end {
   background-color: crimson;
   transition: all 1ms;
 }
