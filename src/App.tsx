@@ -10,9 +10,10 @@ const drawerWidth = 260;
 const App = () => {
   const [algorithm, setAlgorithm] = React.useState<GridAlgorithm>("dfs-stack");
   const [rows, setRows] = React.useState<number>(20);
-  const [columns, setColumns] = React.useState<number>(40);
+  const [columns, setColumns] = React.useState<number>(30);
+  const [nodeSize, setNodeSize] = React.useState<number>(30);
+
   const [delay, setDelay] = React.useState<number>(1);
-  const [nodeSize, setNodeSize] = React.useState<number>(25);
   const [traverse, setTraverse] = React.useState<NodeType>("empty");
   const [boundaries, setBoundaries] = React.useState<boolean>(true);
   const [animate, setAnimate] = React.useState<boolean>(true);

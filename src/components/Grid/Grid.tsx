@@ -234,11 +234,23 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
         return node.row === current.row && node.column === current.column;
     }
 
+    const handleSetNodeType = (node: INode) => {
+        // setNodeType(node, selectedType);
+
+        // if(startNode && selectedType === "end"){
+        //     handleReset();
+        //     const alg = new Dijkstra(grid, props.traverse, props.boundaries);
+        //     alg.completed = completed;
+
+        //     alg.search(startNode).then(() => setPath([...alg.path]));
+        // }
+    }
+
     const renderColumns = (columns: INode[]) => {
         return columns.map((node, i) => <Node key={`node-${node.row}-${node.column}-${i}`}
                                               node={node}
                                               size={props.nodeSize} 
-                                              onClick={() => setNodeType(node, selectedType)}
+                                              onClick={() => handleSetNodeType(node)}
                                               hovered={handleNodeHovered}
                                               isPath={getIsNodePath(node)}
                                               isQueued={getIsNodeQueued(node)}
