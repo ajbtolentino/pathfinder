@@ -1,5 +1,5 @@
 .node-state-transition {
-  transition: all 500ms;
+  transition: all 100ms;
 }
 
 .node {
@@ -7,43 +7,40 @@
   margin: 1px !important;
 }
 
-.node-state-pointed {
-  background-color: aqua !important;
+.node-current.node-state-stacked,
+.node-current.node-state-queued,
+.node-current.node-state-wall,
+.node-current.node-type-start,
+.node-current {
+  background-color: violet !important;
   transition: all 5ms;
 }
 
-.node-state-queued {
-  background-color: lightpink !important;
-  transition: all 5ms;
+.node-state-stacked.node-state-wall,
+.node-state-queued.node-type-wall,
+.node-state-queued,
+.node-state-stacked {
+  background-color: lightpink;
 }
 
+.node-state-visited.node-type-wall,
 .node-state-visited {
-  background-color: darkcyan !important;
+  background-color: dodgerblue;
 }
 
 .node-type-start {
-  background-color: chartreuse !important;
+  background-color: limegreen !important;
 }
 
 .node-type-wall {
-  background-color: chocolate;
+  background-color: gray
+}
+
+.node-path {
+  background-color: rgb(245, 182, 72);
+  transition: all 1ms !important;
 }
 
 .node-type-end {
-  background-color: crimson;
-}
-
-.node-hover-type-start {
-  background-color: chartreuse;
-  transition: all 1ms;
-}
-
-.node-hover-type-wall {
-  background-color: chocolate;
-  transition: all 1ms;
-}
-
-.node-hover-type-end {
-  background-color: crimson;
-  transition: all 1ms;
+  background-color: lightcoral !important;
 }

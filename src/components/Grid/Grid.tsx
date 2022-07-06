@@ -1,185 +1,271 @@
-import { Button, ButtonGroup, FormControlLabel, FormGroup, FormLabel, Grid as MuiGrid, Radio, RadioGroup, StepLabel, TextField } from "@mui/material";
+import { Button, ButtonGroup, Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, Grid as MuiGrid, Radio, RadioGroup, StepLabel, TextField } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import INode, { NodeState, NodeType } from "../../models/INode";
 import Node from "../Node/Node";
 import { useGrid } from "../../hooks/useGrid";
 import { DepthFirst } from "../../algorithms/depthFirst";
 import { BreadthFirst } from "../../algorithms/breadthFirst";
+import { Dijkstra } from "../../algorithms/dijkstra";
+
+export type GridAlgorithm = "dfs-stack" | "dfs-recursive" | "bfs" | "dijkstra" | "count";
+export type GridAction = "start" | "reset" | "clear" | "none";
 
 export interface IPathfinderGridProps {
     columns: number;
     rows: number;
     nodeSize: number;
     delay: number;
+    boundaries: boolean;
+    animate: boolean;
+    traverse: NodeType;
+    algorithm: GridAlgorithm;
+    action?: GridAction;
 }
 
 export const Grid: React.FC<IPathfinderGridProps> = (props) => {
-    const [rows, setRows] = useState<number>(props.rows);
-    const [columns, setColumns] = useState<number>(props.columns);
-    const [delay, setDelay] = useState<number>(props.delay);
-    const [traverse, setTraverse] = useState<NodeType>("path");
+    const { grid, startNode, endNode, initialize, update, setNodeType } = useGrid(props.rows, props.columns);
 
-    const { grid, startNode, initialize, reset, setNodeType } = useGrid(rows, columns);
-    const [currentGrid, setCurrentGrid] = useState([...grid]);
     const [selectedType, setSelectedType] = useState<NodeType>("start");
     const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
 
-    useEffect(() => {
-         setCurrentGrid(grid);
-    }, [grid]);
+    const [current, setCurrent] = useState<INode>();
+    const [path, setPath] = useState<INode[]>([]);
+    const [visited, setVisited] = useState<INode[]>([]);
+    const [queued, setQueued] = useState<INode[]>([]);
 
     const handleNodeHovered = (node: INode) => {
         if(isMouseDown) setNodeType(node, selectedType);
     };
 
+    useEffect(() => {
+        switch(props.action) {
+            case "start":
+                start();
+                break;
+            case "reset":
+                handleReset();
+                break;
+            case "clear":
+                handleReset();
+                initialize();
+                break;
+        }
+    }, [props.action]);
+
+    const start = () => {
+        switch(props.algorithm) {
+            case "bfs":
+                handleBreadthFirst();
+                break;
+            case "count":
+                handleCountGroup();
+                break;
+            case "dfs-recursive":
+                handleDfsRecursive();
+                break;
+            case "dfs-stack":
+                handleDfsStack();
+                break;
+            case "dijkstra":
+                handleDijkstra();
+                break;
+            default:
+                console.log("Invalid algorithm!");
+        }
+    }
+
     const handleDfsStack = async () => {
-        reset();
+        handleReset();
         if(startNode){
-            const alg: DepthFirst = new DepthFirst(grid, traverse);
-            alg.nodeStateChanged = nodeStateChanged;
+            const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries, props.delay);
+            
+            if(props.animate){
+                alg.pointed = nodePointed;
+                alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
+                alg.stacked = (r,c) => nodeStateChanged(r,c, "queued");
+            }
+
             alg.completed = completed;
 
-            await alg.stack(startNode);
+            await alg.runStack(startNode.row, startNode.column);
 
             console.log(`Done in ${alg.totalIterations} iterations!`);
         }
     };
 
     const handleDfsRecursive = async () => {
-        reset();
+        handleReset();
         if(startNode){
-            const alg: DepthFirst = new DepthFirst(grid, traverse);
-            alg.nodeStateChanged = nodeStateChanged;
+            const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries, props.delay);
+            if(props.animate){
+                alg.pointed = nodePointed;
+                alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
+                alg.stacked = (r,c) => nodeStateChanged(r,c, "queued");
+            }
+
             alg.completed = completed;
 
-            await alg.recursive(startNode);
+            await alg.runRecursive(startNode.row, startNode.column);
             
             console.log(`Done in ${alg.totalIterations} iterations!`);
         }
     };
 
     const handleBreadthFirst = async () => {
-        reset();
+        handleReset();
         if(startNode){
-            const alg: BreadthFirst = new BreadthFirst(grid, traverse);
-            alg.stateChanged = nodeStateChanged;
-            alg.done = completed;
+            const alg: BreadthFirst = new BreadthFirst(grid, props.traverse, props.boundaries, props.delay);
+
+            if(props.animate)
+            {
+                alg.dequeued = nodePointed;
+                alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
+                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+            }
+
+            alg.completed = completed;
 
             await alg.scan(startNode);
 
-            console.log(`Done in ${alg.iteration} iterations!`);
+            console.log(`Done in ${alg.totalIterations} iterations!`);
+        }
+    };
+
+    const handleDijkstra = async () => {
+        handleReset();
+        if(startNode && endNode){
+            const alg: Dijkstra = new Dijkstra(grid, props.traverse, props.boundaries, props.delay);
+
+            if(props.animate)
+            {
+                alg.dequeued = nodePointed;
+                alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
+                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                alg.pathUpdated = pathUpdated;
+            }
+
+            alg.completed = completed;
+
+            await alg.search(startNode);
+
+            setPath([...alg.path]);
+
+            console.log(`Done in ${alg.totalIterations} iterations!`);
+        }
+    };
+
+    const pathUpdated = async (node: INode[]) : Promise<any> => {
+        setPath([...node]);
+    }
+
+    const nodePointed = (row: number, column: number) => {
+        setCurrent({...grid[row][column]});
+    };
+
+    const nodeStateChanged = (row: number, column: number, state: NodeState) => {
+        switch(state) {
+            case "queued":
+                setQueued(prev => [...prev, {...grid[row][column]}]);
+                break;
+            case "visited":
+                setVisited(prev => [...prev, {...grid[row][column]}]);
+                break;
         }
     };
 
     const completed = (graph: INode[][]) => {
-        const temp = graph.map(rowNodes => {
-            return rowNodes.map(n => {
-                return {...n};
+        update(graph);
+        graph.forEach(rowNodes => {
+            rowNodes.forEach(node => {
+                setVisited(prev => [...prev, {...node}]);
             });
         });
-
-        setCurrentGrid(temp);
-    };
-
-    const nodeStateChanged = async (row: number, column: number, state: NodeState): Promise<any> => {
-        return new Promise(resolve =>{
-            setTimeout(() => {
-                currentGrid[row][column] = {...currentGrid[row][column], state: state};
-
-                const newGrid = currentGrid.map(rows => [...rows.map(n => {
-                    return {...n};
-                })]);
-
-                setCurrentGrid(() => [...newGrid]);
-                resolve(true);
-            }, delay);
-        },);
+        setCurrent(undefined);
     };
 
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
         if(e.button === 0) setIsMouseDown(true);
     };
 
-    const handleFindWallGroup = async () => {
-        const dfs = new DepthFirst(grid, "wall");
+    const handleReset = () => {
+        setCurrent(undefined);
+        setPath(() => []);
+        setVisited(() => []);
+        setQueued(() => []);
+    }
+
+    const handleCountGroup = async () => {
+        const dfs = new DepthFirst(grid, props.traverse, props.boundaries, props.delay);
         let count = 0;
 
-        // dfs.nodeStateChanged = nodeStateChanged;
+        dfs.pointed = nodePointed;
+        dfs.stacked = (r,c) => nodeStateChanged(r,c, "queued");
+        dfs.visited = (r,c) => nodeStateChanged(r,c, "visited");
         dfs.completed = completed;
         
         for(let row = 0; row < grid.length; row++){
             for(let column = 0; column < grid[row].length; column++) {
+                if(grid[row][column].type !== props.traverse || grid[row][column].state === "visited") continue;
                 
-                if(grid[row][column].type !== "wall" || 
-                    grid[row][column].state === "visited") continue;
-                
-                await dfs.stack(grid[row][column]);
+                await dfs.runRecursive(row, column);
 
                 if(dfs.totalIterations > 0) count++;
             }
         }
+
         console.log(`Total island: ${count}`);
     };
 
+    const getIsNodePath = (node: INode) => {
+        return path.filter(n => n.row === node.row && n.column === node.column).length > 0;
+    }
+
+    const getIsNodeVisited = (node: INode) => {
+        return visited.filter(n => n.row === node.row && n.column === node.column).length > 0;
+    }
+
+    const getIsNodeQueued = (node: INode) => {
+        return queued.filter(n => n.row === node.row && n.column === node.column).length > 0;
+    }
+
+    const getIsNodeCurrent = (node: INode) => {
+        if(!current) return false;
+
+        return node.row === current.row && node.column === current.column;
+    }
+
     const renderColumns = (columns: INode[]) => {
         return columns.map((node, i) => <Node key={`node-${node.row}-${node.column}-${i}`}
+                                              node={node}
                                               size={props.nodeSize} 
                                               onClick={() => setNodeType(node, selectedType)}
                                               hovered={handleNodeHovered}
-                                              node={node}/>);  
+                                              isPath={getIsNodePath(node)}
+                                              isQueued={getIsNodeQueued(node)}
+                                              isVisited={getIsNodeVisited(node)}
+                                              isCurrent={getIsNodeCurrent(node)}
+                                              />);  
     };
 
     return(
     <>
-        <FormGroup>
-            <FormControlLabel label="Algorithm" labelPlacement="start"
-                control={
-                    <ButtonGroup>
-                        <Button onClick={handleDfsStack}>Depth First - Stack</Button>
-                        <Button onClick={handleDfsRecursive}>Depth First - Recursive</Button>
-                        <Button onClick={handleBreadthFirst}>Breadth First</Button> 
-                        <Button onClick={handleFindWallGroup}>Find Wall Group</Button>
-                    </ButtonGroup>
-            } />
-        </FormGroup>
-        <FormGroup row>
-            <FormControlLabel label="Draw" labelPlacement="start"
-                control={
-                    <ButtonGroup>
-                        <FormControlLabel value="start" control={<Radio />} label="Start" onClick={() => setSelectedType("start")} checked={selectedType === "start"}/>
-                        <FormControlLabel value="wall" control={<Radio />} label="Wall"  onClick={() => setSelectedType("wall")} checked={selectedType === "wall"}/>
-                        <FormControlLabel value="path" control={<Radio />} label="Path"  onClick={() => setSelectedType("path")} checked={selectedType === "path"}/>
-                    </ButtonGroup>
-                }/>
-        </FormGroup>
-        <FormGroup row>
-            <FormControlLabel label="Traverse" labelPlacement="start"
-                control={
-                    <FormGroup row>
-                        <FormControlLabel value="path" control={<Radio />} label="Path"  onClick={() => setTraverse("path")} checked={traverse === "path"}/>
-                        <FormControlLabel value="wall" control={<Radio />} label="Wall"  onClick={() => setTraverse("wall")} checked={traverse === "wall"}/>
-                    </FormGroup>
-                }/>
-        </FormGroup>
-        <MuiGrid container overflow={"auto"} onMouseDown={handleMouseDown} onMouseUp={() => setIsMouseDown(false)}>
+        <FormControl>
+            <FormLabel>Draw</FormLabel>
+            <RadioGroup row>
+            <FormControlLabel value="start" control={<Radio />} label="Start" onClick={() => setSelectedType("start")} checked={selectedType === "start"}/>
+            <FormControlLabel value="wall" control={<Radio />} label="Wall"  onClick={() => setSelectedType("wall")} checked={selectedType === "wall"}/>
+            <FormControlLabel value="empty" control={<Radio />} label="Empty"  onClick={() => setSelectedType("empty")} checked={selectedType === "empty"}/>
+            <FormControlLabel value="end" control={<Radio />} label="End"  onClick={() => setSelectedType("end")} checked={selectedType === "end"}/>
+            </RadioGroup>
+        </FormControl>
+        <MuiGrid container overflow={"auto"} width={"auto"} onMouseDown={handleMouseDown} onMouseUp={() => setIsMouseDown(false)}>
             {
-                currentGrid.map((row, x) => 
+                grid.map((row, x) => 
                 <MuiGrid key={`row-${x}`} container flexWrap={"nowrap"} justifyContent={"center"}>
                     {renderColumns(row)}
                 </MuiGrid>)
             }
         </MuiGrid>
-        <FormGroup row style={{margin: 10}}>
-            <FormGroup row>
-                <FormControlLabel label={"Rows"}control={<TextField size="small" type={"number"} value={rows} onChange={e => setRows(+e.target.value)}/>} />
-                <FormControlLabel label={"Columns"}control={<TextField size="small" type={"number"} value={columns} onChange={e => setColumns(+e.target.value)}/>} />
-                <FormControlLabel label={"Delay (ms)"}control={<TextField size="small" type={"number"} value={delay} onChange={e => setDelay(+e.target.value)}/>} />
-            </FormGroup>
-            <ButtonGroup>
-                <Button onClick={initialize}>Clear</Button>
-                <Button onClick={reset}>Reset</Button>
-            </ButtonGroup>
-        </FormGroup>
     </>
     );
 };

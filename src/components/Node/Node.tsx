@@ -5,27 +5,48 @@ import INode, { NodeState, NodeType } from "../../models/INode";
 export interface INodeProps {
     node: INode;
     size: number;
+    isCurrent: boolean;
+    isPath: boolean;
+    isQueued: boolean;
+    isVisited: boolean;
     onClick: () => void;
     hovered?: (node: INode) => void;
 }
 
 export const Node: React.FC<INodeProps> = (props) => {
     const [node, setNode] = useState<INode>({...props.node});
+    const [isCurrent, setIsCurrent] = useState<boolean>(props.isCurrent);
 
     useEffect(() => {
         setNode({...props.node});
-    }, [props.node]);
+        setIsCurrent(props.isCurrent);
+    }, [props.node, props.isCurrent]);
+
+    const getPointedStyle = () => {
+        if(isCurrent) return "node-current";
+
+        return ""; 
+    };
+
+    const getQueuedStyle = () => {
+        if(props.isQueued) return "node-state-queued node-state-stacked";
+
+        return "";
+    };
 
     const getStateStyle = () => {
-        return `node-state-${node.state}`;
+        return `node-state-${props.isVisited ? "visited" : "unvisited"}`;
     };
 
     const getTypeStyle = () => {
+        if(props.isPath && (node.type === "wall" || node.type === "empty")) return "node-path";
+
         return `node-type-${node.type}`;
     };
 
     const getClassName = () => {
-        return `node node-state-transition ${getStateStyle()} ${getTypeStyle()}`;
+
+        return `node node-state-transition ${getStateStyle()} ${getTypeStyle()} ${getPointedStyle()} ${getQueuedStyle()}`;
     };
 
     const handleMouseEnter = () => {

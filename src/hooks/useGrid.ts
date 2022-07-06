@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import INode, { NodeState, NodeType } from "../models/INode";
+import INode, { NodeType } from "../models/INode";
 
 export const useGrid = (rows: number, columns: number) => {
     const [grid, setGrid] = useState<INode[][]>([]);
     const [startNode, setStartNode] = useState<INode>();
+    const [endNode, setEndNode] = useState<INode>();
 
     useEffect(() => {
         initialize();
@@ -23,8 +24,9 @@ export const useGrid = (rows: number, columns: number) => {
                 currentRow.push({
                     row: x,
                     column: y,
-                    type: "path",
-                    state: "unvisited"
+                    type: "empty",
+                    state: "unvisited",
+                    distance: Infinity
                 });
             }
 
@@ -34,8 +36,16 @@ export const useGrid = (rows: number, columns: number) => {
         setGrid([...tempGrid]);
     };
 
+    const update = (graph: INode[][]) => {
+        const temp = graph.map(rowNodes => {
+            return rowNodes.map(node => {return{...node}});
+        })
+
+        setGrid(() => [...temp]);
+    };
+
     const reset = () => {
-        const tempGrid: INode[][] = [...grid.map(rowNodes => {
+        const tempGrid: INode[][] = grid.map(rowNodes => {
             return [...rowNodes.map(node => {
                 const newNode: INode = {
                     ...node,
@@ -44,27 +54,32 @@ export const useGrid = (rows: number, columns: number) => {
 
                 return newNode;
             })];
-        })];
+        });
 
         setGrid(() => [...tempGrid]);
     };
 
     const setNodeType = (node: INode, type: NodeType) => {
-        const tempGrid = [...grid]; 
 
         if(startNode && type === "start") 
-            tempGrid[startNode.row][startNode.column] = {...startNode, type: "path"};
+            grid[startNode.row][startNode.column] = {...startNode, type: "empty"};
+
+        if(endNode && type === "end")
+            grid[endNode.row][endNode.column] = {...endNode, type: "empty"};
 
         if(type === "start") setStartNode(node);
+        if(type === "end") setEndNode(node);
 
-        tempGrid[node.row][node.column] = {...node, type: type};
+        grid[node.row][node.column] = {...node, type: type};
 
-        setGrid(() => [...tempGrid]);
+        setGrid(() => [...grid]);
     };
 
     return {
         grid,
         startNode,
+        endNode,
+        update,
         setNodeType,
         reset,
         initialize
