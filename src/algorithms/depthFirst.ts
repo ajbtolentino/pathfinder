@@ -11,7 +11,6 @@ export class DepthFirst {
     pointed?: (row: number, column: number) => void;
     visited?: (row: number, column: number) => void;
     stacked?: (row: number, column: number) => void;
-    completed?: (graph: INode[][]) => void;
 
     constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, delay: number = 0){
         this.traverse = traverse;
@@ -20,7 +19,8 @@ export class DepthFirst {
         this.delay = delay;
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
-                return {...node};
+                const newNode: INode = {...node, state: "unvisited"};
+                return newNode;
             })];
         })];
     };
@@ -50,7 +50,7 @@ export class DepthFirst {
             this.totalIterations++;
         }
 
-        if(this.completed) this.completed(this.graph);
+        return this.graph;
     };
 
     runRecursive = async (row: number, column: number) => {
@@ -78,7 +78,7 @@ export class DepthFirst {
         this.totalIterations++;
 
         if(current.row === 0 && current.column === 0) 
-            if(this.completed) this.completed(this.graph);
+            return this.graph;
     };
 
     shift = async (stack: INode[]): Promise<INode | undefined | null> => {

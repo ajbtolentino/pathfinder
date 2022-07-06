@@ -10,7 +10,6 @@ export class BreadthFirst {
     visited?: (row: number, column: number) => void;
     dequeued?: (row: number, column: number) => void;
     queued?: (row: number, column: number) => void;
-    completed?: (graph: INode[][]) => void;
     boundaries: boolean;
 
     constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, delay: number = 0) {
@@ -20,7 +19,8 @@ export class BreadthFirst {
         this.delay = delay;
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
-                return {...node};
+                const newNode: INode = {...node, state: "unvisited"};
+                return newNode;
             })];
         })];
     }
@@ -49,7 +49,7 @@ export class BreadthFirst {
             this.totalIterations++;
         }
 
-        if(this.completed) this.completed(this.graph);
+        return this.graph;
     };
 
     dequeue = async (queue: INode[]) => {

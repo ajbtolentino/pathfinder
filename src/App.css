@@ -4,7 +4,7 @@
 
 .node {
   border: 2px solid black !important;
-  margin: 1px !important;
+  margin: .5px !important;
 }
 
 .node-current.node-state-stacked,

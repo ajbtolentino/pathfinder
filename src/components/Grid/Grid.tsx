@@ -8,7 +8,7 @@ import { BreadthFirst } from "../../algorithms/breadthFirst";
 import { Dijkstra } from "../../algorithms/dijkstra";
 
 export type GridAlgorithm = "dfs-stack" | "dfs-recursive" | "bfs" | "dijkstra" | "count";
-export type GridAction = "start" | "reset" | "clear" | "none";
+export type GridAction = "start" | "reset" | "clear" | "none" | "restart";
 
 export interface IPathfinderGridProps {
     columns: number;
@@ -20,6 +20,7 @@ export interface IPathfinderGridProps {
     traverse: NodeType;
     algorithm: GridAlgorithm;
     action?: GridAction;
+    done?: () => void;
 }
 
 export const Grid: React.FC<IPathfinderGridProps> = (props) => {
@@ -85,11 +86,10 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
                 alg.stacked = (r,c) => nodeStateChanged(r,c, "queued");
             }
 
-            alg.completed = completed;
+            const graph = await alg.runStack(startNode.row, startNode.column);
 
-            await alg.runStack(startNode.row, startNode.column);
-
-            console.log(`Done in ${alg.totalIterations} iterations!`);
+            if(graph) completed(graph);
+            if(props.done) props.done();
         }
     };
 
@@ -103,11 +103,10 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
                 alg.stacked = (r,c) => nodeStateChanged(r,c, "queued");
             }
 
-            alg.completed = completed;
-
-            await alg.runRecursive(startNode.row, startNode.column);
+            const graph = await alg.runRecursive(startNode.row, startNode.column);
             
-            console.log(`Done in ${alg.totalIterations} iterations!`);
+            if(graph) completed(graph);
+            if(props.done) props.done();
         }
     };
 
@@ -123,11 +122,10 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
                 alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
             }
 
-            alg.completed = completed;
+            const graph = await alg.scan(startNode);
 
-            await alg.scan(startNode);
-
-            console.log(`Done in ${alg.totalIterations} iterations!`);
+            if(graph) completed(graph);
+            if(props.done) props.done();
         }
     };
 
@@ -144,19 +142,18 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
                 alg.pathUpdated = pathUpdated;
             }
 
-            alg.completed = completed;
-
-            await alg.search(startNode);
+            const graph = await alg.search(startNode);
 
             setPath([...alg.path]);
 
-            console.log(`Done in ${alg.totalIterations} iterations!`);
+            if(graph) completed(graph);
+            if(props.done) props.done();
         }
     };
 
     const pathUpdated = async (node: INode[]) : Promise<any> => {
         setPath([...node]);
-    }
+    };
 
     const nodePointed = (row: number, column: number) => {
         setCurrent({...grid[row][column]});
@@ -175,12 +172,21 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
     const completed = (graph: INode[][]) => {
         update(graph);
+        const tempVisited: INode[] = [];
+        const tempQueued: INode[] = [];
+
         graph.forEach(rowNodes => {
             rowNodes.forEach(node => {
-                setVisited(prev => [...prev, {...node}]);
+                if(node.state === "visited")
+                    tempVisited.push({...node});
+                if(node.state === "queued")
+                    tempQueued.push({...node});
             });
         });
-        setCurrent(undefined);
+
+        setVisited(() => [...tempVisited]);
+        setQueued(() => [...tempQueued]);
+        setCurrent(() => undefined);
     };
 
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -188,7 +194,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
     };
 
     const handleReset = () => {
-        setCurrent(undefined);
+        setCurrent(() => undefined);
         setPath(() => []);
         setVisited(() => []);
         setQueued(() => []);
@@ -201,7 +207,6 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
         dfs.pointed = nodePointed;
         dfs.stacked = (r,c) => nodeStateChanged(r,c, "queued");
         dfs.visited = (r,c) => nodeStateChanged(r,c, "visited");
-        dfs.completed = completed;
         
         for(let row = 0; row < grid.length; row++){
             for(let column = 0; column < grid[row].length; column++) {
@@ -213,7 +218,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             }
         }
 
-        console.log(`Total island: ${count}`);
+        if(props.done) props.done();
     };
 
     const getIsNodePath = (node: INode) => {
@@ -235,15 +240,14 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
     }
 
     const handleSetNodeType = (node: INode) => {
-        // setNodeType(node, selectedType);
+        setNodeType(node, selectedType);
 
-        // if(startNode && selectedType === "end"){
-        //     handleReset();
-        //     const alg = new Dijkstra(grid, props.traverse, props.boundaries);
-        //     alg.completed = completed;
+        if(startNode && selectedType === "end"){
+            handleReset();
+            const alg = new Dijkstra(grid, props.traverse, props.boundaries);
 
-        //     alg.search(startNode).then(() => setPath([...alg.path]));
-        // }
+            alg.search(startNode).then(() => setPath([...alg.path]));
+        }
     }
 
     const renderColumns = (columns: INode[]) => {
@@ -267,7 +271,10 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             <FormControlLabel value="start" control={<Radio />} label="Start" onClick={() => setSelectedType("start")} checked={selectedType === "start"}/>
             <FormControlLabel value="wall" control={<Radio />} label="Wall"  onClick={() => setSelectedType("wall")} checked={selectedType === "wall"}/>
             <FormControlLabel value="empty" control={<Radio />} label="Empty"  onClick={() => setSelectedType("empty")} checked={selectedType === "empty"}/>
-            <FormControlLabel value="end" control={<Radio />} label="End"  onClick={() => setSelectedType("end")} checked={selectedType === "end"}/>
+            {
+                props.algorithm === "dijkstra" &&
+                <FormControlLabel value="end" control={<Radio />} label="End"  onClick={() => setSelectedType("end")} checked={selectedType === "end"}/>
+            }
             </RadioGroup>
         </FormControl>
         <MuiGrid container overflow={"auto"} width={"auto"} onMouseDown={handleMouseDown} onMouseUp={() => setIsMouseDown(false)}>

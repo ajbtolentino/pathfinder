@@ -13,7 +13,6 @@ export class Dijkstra {
     dequeued?: (row: number, column: number) => void;
     queued?: (row: number, column: number) => void;
     pathUpdated?: (path: INode[]) => void;
-    completed?: (graph: INode[][]) => void;
 
     constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, delay: number = 0) {
         this.traverse = traverse;
@@ -23,7 +22,8 @@ export class Dijkstra {
         this.delay = delay;
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
-                return {...node};
+                const newNode: INode = {...node, state: "unvisited"};
+                return newNode;
             })];
         })];
     }
@@ -53,7 +53,7 @@ export class Dijkstra {
             this.totalIterations++;
         }
 
-        if(this.completed) this.completed(this.graph);
+        return this.graph;
     };
     
     drawPath = async (node: INode) => {
@@ -73,18 +73,19 @@ export class Dijkstra {
         const neighbors = NeighborHelper.getNeighbors(this.graph, current, this.boundaries); 
 
         for(let neighbor of neighbors) {
+            const isValidType = neighbor.type === this.traverse || neighbor.type === "end" || neighbor.type === "start";
+            const isValid = isValidType && neighbor.state === "unvisited";
+
+            if(!isValid) continue;
+
             if(current.distance < neighbor.distance) {
                 neighbor.distance = current.distance + 1;
                 neighbor.previous = {...current};
 
-                this.path = [];
                 await this.drawPath(neighbor);
             }
 
             if(neighbor.type === "end") return neighbor;
-
-            const isValid = neighbor.type === this.traverse || neighbor.type === "start";
-            if(!isValid || neighbor.state !== "unvisited") continue;
             
             await this.queue(queue, neighbor);
         }

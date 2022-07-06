@@ -20,6 +20,11 @@ const App = () => {
 
   const [gridAction, setGridAction] = React.useState<GridAction>("none");
 
+  const handleDone = () => {
+    setGridAction("restart");
+    alert("Done!");
+  }
+
   return (
     <Box sx={{ display: 'flex' }}>
         <Drawer sx={{
@@ -88,6 +93,7 @@ const App = () => {
           animate={animate}
           algorithm={algorithm}
           action={gridAction}
+          done={handleDone}
         />
       </Box>
     </Box>
