@@ -12,7 +12,7 @@
 .node-current.node-state-wall,
 .node-current.node-type-start,
 .node-current {
-  background-color: violet !important;
+  background-color: violet;
   transition: all 5ms;
 }
 
@@ -25,7 +25,7 @@
 
 .node-state-visited.node-type-wall,
 .node-state-visited {
-  background-color: dodgerblue;
+  background-color: dodgerblue !important;
 }
 
 .node-type-start {

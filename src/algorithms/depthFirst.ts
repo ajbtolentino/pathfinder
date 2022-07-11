@@ -59,7 +59,7 @@ export class DepthFirst {
         if(!current) return;
         
         if(this.pointed) {
-            await wait(0);
+            await wait(this.delay);
             this.pointed(current.row, current.column);
         }
 
@@ -87,7 +87,7 @@ export class DepthFirst {
         if(!current) return null;
 
         if(this.pointed) {
-            await wait(0);
+            await wait(this.delay);
             this.pointed(current.row, current.column);
         }
 
@@ -98,7 +98,7 @@ export class DepthFirst {
         node.state = "visited";
 
         if(this.visited) {
-            await wait(0);
+            await wait(this.delay);
             this.visited(node.row, node.column);
         }
     }
@@ -108,7 +108,7 @@ export class DepthFirst {
 
         if(this.stacked) 
         {
-            await wait(0);
+            await wait(this.delay);
             this.stacked(node.row, node.column);
         }
     }

@@ -55,6 +55,9 @@ const App = () => {
             </FormControl>
             <FormGroup sx={{m: 1}} row>
               <FormControlLabel control={<Checkbox checked={animate} onChange={e => setAnimate(e.currentTarget.checked)}/>} label="Animate" />
+              <TextField type={"number"} label="Delay (ms)" size="small" sx={{width: 130}} value={delay} onChange={e => setDelay(+e.target.value)}/>
+            </FormGroup>
+            <FormGroup sx={{m: 1}} row>
               <FormControlLabel control={<Checkbox checked={boundaries} onChange={e => setBoundaries(e.currentTarget.checked)}/>} label="Boundaries" />
             </FormGroup>
             <FormGroup sx={{m: 1, justifyContent: "space-between"}} row>
