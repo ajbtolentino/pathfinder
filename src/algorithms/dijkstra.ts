@@ -65,7 +65,7 @@ export class Dijkstra {
 
         if(this.pathUpdated) {
             this.pathUpdated([...this.path]);
-            await wait(this.delay);
+            await wait(0);
         } 
     }
 
@@ -82,7 +82,8 @@ export class Dijkstra {
                 neighbor.distance = current.distance + 1;
                 neighbor.previous = {...current};
 
-                await this.drawPath(neighbor);
+                this.path = [];
+                await this.drawPath(neighbor.previous);
             }
 
             if(neighbor.type === "end") return neighbor;
@@ -98,7 +99,7 @@ export class Dijkstra {
 
         if(current && this.dequeued){
             this.dequeued(current.row, current.column);
-            await wait(this.delay);
+            await wait(0);
         }
 
         return current;
@@ -109,7 +110,7 @@ export class Dijkstra {
 
         if(this.visited) {
             this.visited(node.row, node.column);
-            await wait(this.delay);
+            await wait(0);
         }
     }
 
@@ -118,7 +119,7 @@ export class Dijkstra {
 
         if(this.queued) {
             this.queued(node.row, node.column);
-            await wait(this.delay);
+            await wait(0);
         }
     }
 }

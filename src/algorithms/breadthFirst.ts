@@ -57,7 +57,7 @@ export class BreadthFirst {
 
         if(current && this.dequeued) {
             this.dequeued(current.row, current.column);
-            await wait(this.delay);
+            await wait(0);
         }
 
         return current;
@@ -68,7 +68,7 @@ export class BreadthFirst {
 
         if(this.visited){
             this.visited(node.row, node.column);
-            await wait(this.delay);
+            await wait(0);
         }
     }
 
@@ -77,7 +77,7 @@ export class BreadthFirst {
 
         if(this.queued) {
             this.queued(node.row, node.column);
-            await wait(this.delay);
+            await wait(0);
         }
     }
 }

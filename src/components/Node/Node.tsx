@@ -1,5 +1,6 @@
 import { Grid, Paper } from "@mui/material";
-import { useEffect, useState } from "react";
+import React from "react";
+import { useEffect, useMemo, useState } from "react";
 import INode, { NodeState, NodeType } from "../../models/INode";
 
 export interface INodeProps {
@@ -13,7 +14,7 @@ export interface INodeProps {
     hovered?: (node: INode) => void;
 }
 
-export const Node: React.FC<INodeProps> = (props) => {
+export const Node = React.memo((props: INodeProps) => {
     const [node, setNode] = useState<INode>({...props.node});
     const [isCurrent, setIsCurrent] = useState<boolean>(props.isCurrent);
 
@@ -60,6 +61,6 @@ export const Node: React.FC<INodeProps> = (props) => {
               className={getClassName()}>
         </Grid>
     )
-};
+});
 
 export default Node;
