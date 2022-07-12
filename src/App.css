@@ -1,31 +1,50 @@
-.node-state-transition {
-  transition: all 100ms;
+@keyframes zoom {
+  0% {
+  transform: scale(1, 1);
+  }
+  50% {
+  transform: scale(1.03, 1.03);
+  }
+  100% {
+  transform: scale(1, 1);
+  }
+}
+
+@keyframes hover-zoom {
+  0% {
+  transform: scale(1, 1);
+  }
+  100% {
+  transform: scale(1.5, 1.5);
+  }
 }
 
 .node {
-  border: 2px solid black !important;
+  border: 1px solid black !important;
   margin: .5px !important;
+  transition: transform .2s;
+  background-color: white;
 }
 
-.node-current.node-state-stacked,
-.node-current.node-state-queued,
-.node-current.node-state-wall,
-.node-current.node-type-start,
+.node:hover {
+  transform: scale(1.5);
+}
+
+.node-state-visited.node-current,
 .node-current {
-  background-color: violet;
-  transition: all 5ms;
+  background-color: violet !important;
 }
 
-.node-state-stacked.node-state-wall,
-.node-state-queued.node-type-wall,
 .node-state-queued,
 .node-state-stacked {
   background-color: lightpink;
 }
 
-.node-state-visited.node-type-wall,
+.node-wall.node-state-visited,
 .node-state-visited {
   background-color: dodgerblue !important;
+  animation: zoom;
+  animation-duration: 500ms;
 }
 
 .node-type-start {
@@ -38,7 +57,7 @@
 
 .node-path {
   background-color: rgb(245, 182, 72);
-  transition: all 1ms !important;
+  /* transition: all 1ms !important; */
 }
 
 .node-type-end {

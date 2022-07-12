@@ -75,15 +75,15 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries, props.delay);
             
             if(props.animate){
-                alg.pointed = nodePointed;
+                // alg.pointed = nodePointed;
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                alg.stacked = (r,c) => nodeStateChanged(r,c, "queued");
+                // alg.stacked = (r,c) => nodeStateChanged(r,c, "queued");
             }
 
-            await alg.runStack(startNode.row, startNode.column);
+            const graph = await alg.runStack(startNode.row, startNode.column);
 
             // if(graph) completed(graph);
-            // if(props.done) props.done();
+            if(props.done) props.done();
         }
     };
 
@@ -92,9 +92,9 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
         if(startNode){
             const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries, props.delay);
             if(props.animate){
-                alg.pointed = nodePointed;
+                // alg.pointed = nodePointed;
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                alg.stacked = (r,c) => nodeStateChanged(r,c, "queued");
+                // alg.stacked = (r,c) => nodeStateChanged(r,c, "queued");
             }
 
             const graph = await alg.runRecursive(startNode.row, startNode.column);
@@ -111,9 +111,9 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
             if(props.animate)
             {
-                alg.dequeued = nodePointed;
+                // alg.dequeued = nodePointed;
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                // alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
             }
 
             const graph = await alg.scan(startNode);
@@ -132,7 +132,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             {
                 alg.dequeued = nodePointed;
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                // alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
                 alg.pathUpdated = pathUpdated;
             }
 
@@ -144,16 +144,23 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
     };
 
     const pathUpdated = async (nodes: INode[]) : Promise<any> => {
-        const allNodes = document.getElementsByClassName("node");
-        const keys = nodes.map(n => `node-${n.row}-${n.column}`);
+        const ids = nodes.map(n => `node-${n.row}-${n.column}`);
 
-        // for(let i = 0; i < allNodes.length; i++){
-        //     if(keys.filter(n => n.indexOf(`${allNodes.item(i)?.classList)
-        // }
-        //TODO: path class
+        document.querySelectorAll(".node").forEach(item => {
+            if(ids.includes(item.id) && !item.classList.contains("node-path")) {
+                item.classList.add("node-path");
+            }
+            else {
+                item.classList.remove("node-path");   
+            }
+        });
     };
 
     const nodePointed = (row: number, column: number) => {
+        document.querySelectorAll(".node").forEach(item => {
+            item.classList.remove("node-current");   
+        });
+
         document.getElementById(`node-${row}-${column}`)?.classList.add("node-current");
     };
 

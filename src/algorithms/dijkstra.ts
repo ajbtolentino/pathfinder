@@ -65,7 +65,7 @@ export class Dijkstra {
 
         if(this.pathUpdated) {
             this.pathUpdated([...this.path]);
-            wait(this.delay);
+            await wait(this.delay);
         } 
     }
 
@@ -99,7 +99,7 @@ export class Dijkstra {
 
         if(current && this.dequeued){
             this.dequeued(current.row, current.column);
-            wait(this.delay);
+            await wait(this.delay);
         }
 
         return current;
@@ -110,7 +110,7 @@ export class Dijkstra {
 
         if(this.visited) {
             this.visited(node.row, node.column);
-            wait(this.delay);
+            await wait(this.delay);
         }
     }
 
@@ -119,7 +119,7 @@ export class Dijkstra {
 
         if(this.queued) {
             this.queued(node.row, node.column);
-            wait(this.delay);
+            await wait(this.delay);
         }
     }
 }

@@ -1,4 +1,4 @@
-import { wait } from "@testing-library/user-event/dist/utils/misc/wait";
+import { wait } from "../helpers/WaitHelper";
 import NeighborHelper from "../helpers/NeighborHelper";
 import INode, { NodeState, NodeType } from "../models/INode";
 
@@ -59,8 +59,8 @@ export class DepthFirst {
         if(!current) return;
         
         if(this.pointed) {
-            await wait(this.delay);
             this.pointed(current.row, current.column);
+            await wait(this.delay);
         }
 
         if(current.state === "visited") return;
@@ -87,8 +87,8 @@ export class DepthFirst {
         if(!current) return null;
 
         if(this.pointed) {
-            await wait(this.delay);
             this.pointed(current.row, current.column);
+            await wait(this.delay);
         }
 
         return current;
@@ -98,8 +98,8 @@ export class DepthFirst {
         node.state = "visited";
 
         if(this.visited) {
-            await wait(this.delay);
             this.visited(node.row, node.column);
+            await wait(this.delay);
         }
     }
 
@@ -108,8 +108,8 @@ export class DepthFirst {
 
         if(this.stacked) 
         {
-            await wait(this.delay);
             this.stacked(node.row, node.column);
+            await wait(this.delay);
         }
     }
 } 
