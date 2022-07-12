@@ -8,7 +8,7 @@ import { NodeType } from './models/INode';
 const drawerWidth = 260;
 
 const App = () => {
-  const [algorithm, setAlgorithm] = React.useState<GridAlgorithm>("dfs-stack");
+  const [algorithm, setAlgorithm] = React.useState<GridAlgorithm>("astar");
   const [rows, setRows] = React.useState<number>(20);
   const [columns, setColumns] = React.useState<number>(30);
   const [nodeSize, setNodeSize] = React.useState<number>(30);
@@ -39,10 +39,11 @@ const App = () => {
             <FormControl variant="outlined" size='small' sx={{ m: 1 }}>
               <InputLabel id="demo-simple-select-standard-label">Algorithm</InputLabel>
               <Select label="Algorithm" value={algorithm} onChange={e => setAlgorithm(e.target.value as GridAlgorithm)}>
+                <MenuItem value="astar">A-Star</MenuItem>
+                <MenuItem value="dijkstra">Dijkstra's</MenuItem>
                 <MenuItem value="dfs-stack">DFS - Stack</MenuItem>
                 <MenuItem value="dfs-recursive">DFS - Recursive</MenuItem>
                 <MenuItem value="bfs">Breadth First Search</MenuItem>
-                <MenuItem value="dijkstra">Dijkstra's</MenuItem>
                 <MenuItem value="count">Count</MenuItem>
               </Select>
             </FormControl>

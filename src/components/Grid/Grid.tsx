@@ -6,8 +6,9 @@ import { useGrid } from "../../hooks/useGrid";
 import { DepthFirst } from "../../algorithms/depthFirst";
 import { BreadthFirst } from "../../algorithms/breadthFirst";
 import { Dijkstra } from "../../algorithms/dijkstra";
+import { AStar } from "../../algorithms/aStar";
 
-export type GridAlgorithm = "dfs-stack" | "dfs-recursive" | "bfs" | "dijkstra" | "count";
+export type GridAlgorithm = "dfs-stack" | "dfs-recursive" | "bfs" | "dijkstra" | "astar" | "count";
 export type GridAction = "start" | "reset" | "clear" | "none" | "restart";
 
 export interface IPathfinderGridProps {
@@ -64,6 +65,9 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             case "dijkstra":
                 handleDijkstra();
                 break;
+            case "astar":
+                handleAStar();
+                break;
             default:
                 console.log("Invalid algorithm!");
         }
@@ -75,15 +79,10 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries, props.delay);
             
             if(props.animate){
-                // alg.pointed = nodePointed;
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                // alg.stacked = (r,c) => nodeStateChanged(r,c, "queued");
             }
 
-            const graph = await alg.runStack(startNode.row, startNode.column);
-
-            // if(graph) completed(graph);
-            if(props.done) props.done();
+            await alg.runStack(startNode.row, startNode.column);
         }
     };
 
@@ -92,15 +91,10 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
         if(startNode){
             const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries, props.delay);
             if(props.animate){
-                // alg.pointed = nodePointed;
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                // alg.stacked = (r,c) => nodeStateChanged(r,c, "queued");
             }
 
-            const graph = await alg.runRecursive(startNode.row, startNode.column);
-            
-            if(graph) completed(graph);
-            if(props.done) props.done();
+            await alg.runRecursive(startNode.row, startNode.column);
         }
     };
 
@@ -111,15 +105,11 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
             if(props.animate)
             {
-                // alg.dequeued = nodePointed;
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                // alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
             }
 
-            const graph = await alg.scan(startNode);
-
-            if(graph) completed(graph);
-            if(props.done) props.done();
+            await alg.scan(startNode);
         }
     };
 
@@ -130,28 +120,46 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
             if(props.animate)
             {
-                alg.dequeued = nodePointed;
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                // alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
-                alg.pathUpdated = pathUpdated;
+                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                // alg.pathUpdated = pathUpdated;
             }
 
             await alg.search(startNode);
 
-            // if(graph) completed(graph);
-            if(props.done) props.done();
+            pathUpdated(alg.path);
+        }
+    };
+
+    const handleAStar = async () => {
+        handleReset();
+        if(startNode && endNode){
+            const alg: AStar = new AStar(grid, props.traverse, props.boundaries, props.delay);
+
+            if(props.animate)
+            {
+                alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
+                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+            }
+
+            const endNode = await alg.search();
+
+            console.log(endNode);
         }
     };
 
     const pathUpdated = async (nodes: INode[]) : Promise<any> => {
         const ids = nodes.map(n => `node-${n.row}-${n.column}`);
 
-        document.querySelectorAll(".node").forEach(item => {
+        document.querySelectorAll(".node.node-path").forEach(item => {
+            item.classList.add("node-state-visited");
+            item.classList.remove("node-path");
+        });
+
+        document.querySelectorAll(".node.node-state-visited").forEach(item => {
             if(ids.includes(item.id) && !item.classList.contains("node-path")) {
+                item.classList.remove("node-state-visited");
                 item.classList.add("node-path");
-            }
-            else {
-                item.classList.remove("node-path");   
             }
         });
     };
@@ -195,7 +203,9 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
     };
 
     const handleReset = () => {
-        
+        document.querySelectorAll(".node").forEach(node => {
+            node.classList.remove("node-state-visited", "node-path", "node-state-queued", "node-state-stacked");
+        })
     }
 
     const handleCountGroup = async () => {
@@ -241,12 +251,12 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             <FormControlLabel value="wall" control={<Radio />} label="Wall"  onClick={() => setSelectedType("wall")} checked={selectedType === "wall"}/>
             <FormControlLabel value="empty" control={<Radio />} label="Empty"  onClick={() => setSelectedType("empty")} checked={selectedType === "empty"}/>
             {
-                props.algorithm === "dijkstra" &&
+                (props.algorithm === "dijkstra" || props.algorithm === "astar") &&
                 <FormControlLabel value="end" control={<Radio />} label="End"  onClick={() => setSelectedType("end")} checked={selectedType === "end"}/>
             }
             </RadioGroup>
         </FormControl>
-        <MuiGrid container overflow={"auto"} width={"auto"} onMouseDown={handleMouseDown} onMouseUp={() => setIsMouseDown(false)}>
+        <MuiGrid container overflow={"visible"} width={"auto"} onMouseDown={handleMouseDown} onMouseUp={() => setIsMouseDown(false)}>
             {
                 grid.map((row, x) => 
                 <MuiGrid key={`row-${x}`} container flexWrap={"nowrap"} justifyContent={"center"}>

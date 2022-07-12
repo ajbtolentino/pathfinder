@@ -1,22 +1,7 @@
 @keyframes zoom {
-  0% {
-  transform: scale(1, 1);
-  }
-  50% {
-  transform: scale(1.03, 1.03);
-  }
-  100% {
-  transform: scale(1, 1);
-  }
-}
-
-@keyframes hover-zoom {
-  0% {
-  transform: scale(1, 1);
-  }
-  100% {
-  transform: scale(1.5, 1.5);
-  }
+  0% {transform: scale(1, 1);}
+  50% {transform: scale(1.05, 1.05);}
+  100% {transform: scale(1, 1);}
 }
 
 .node {
@@ -55,9 +40,9 @@
   background-color: gray
 }
 
+.node-state-visited.node-path,
 .node-path {
   background-color: rgb(245, 182, 72);
-  /* transition: all 1ms !important; */
 }
 
 .node-type-end {

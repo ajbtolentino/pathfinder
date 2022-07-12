@@ -22,7 +22,12 @@ export class Dijkstra {
         this.delay = delay;
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
-                const newNode: INode = {...node, state: "unvisited"};
+                const newNode: INode = {
+                    ...node, 
+                    distance: node.type === "start" ? 0 : Infinity,
+                    state: "unvisited"
+                };
+
                 return newNode;
             })];
         })];
@@ -30,7 +35,6 @@ export class Dijkstra {
 
     search = async (startNode: INode) => {
         const first = this.graph[startNode.row][startNode.column];
-        first.distance = 0;
 
         const queue = [first];
 
