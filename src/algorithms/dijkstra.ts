@@ -7,6 +7,7 @@ export class Dijkstra {
     graph: INode[][];
     totalIterations: number;
     boundaries: boolean;
+    diagonalSearch: boolean;
     path: INode[];
     delay: number;
     visited?: (row: number, column: number) => void;
@@ -14,10 +15,11 @@ export class Dijkstra {
     queued?: (row: number, column: number) => void;
     pathUpdated?: (path: INode[]) => void;
 
-    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, delay: number = 0) {
+    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, diagonalSearch: boolean, delay: number = 0) {
         this.traverse = traverse;
         this.totalIterations = 0;
         this.boundaries = boundaries;
+        this.diagonalSearch = diagonalSearch;
         this.path = [];
         this.delay = delay;
         this.graph = [...graph.map(rowNodes => {
@@ -74,7 +76,7 @@ export class Dijkstra {
     }
 
     isFound = async (queue: INode[], current: INode) => {
-        const neighbors = NeighborHelper.getNeighbors(this.graph, current, this.boundaries); 
+        const neighbors = NeighborHelper.getNeighbors(this.graph, current, this.boundaries, this.diagonalSearch); 
 
         for(let neighbor of neighbors) {
             const isValidType = neighbor.type === this.traverse || neighbor.type === "end" || neighbor.type === "start";

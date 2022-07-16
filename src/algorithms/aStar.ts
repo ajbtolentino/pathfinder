@@ -7,6 +7,7 @@ export class AStar {
     traverse: NodeType;
     totalIterations: number;
     boundaries: boolean;
+    diagonalSearch: boolean;
     delay: number;
     path: INode[];
     visited?: (row: number, column: number) => void;
@@ -14,7 +15,7 @@ export class AStar {
     queued?: (row: number, column: number) => void;
     pathUpdated?: (path: INode[]) => void;
 
-    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, delay: number = 0) {
+    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, diagonalSearch: boolean, delay: number = 0, ) {
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
                 const aStarNode: INode = {
@@ -28,6 +29,7 @@ export class AStar {
         this.traverse = traverse;
         this.totalIterations = 0;
         this.boundaries = boundaries;
+        this.diagonalSearch = diagonalSearch;
         this.delay = delay;
         this.path = [];
     }
@@ -35,7 +37,7 @@ export class AStar {
     search = async (startNode: INode, endNode: INode) => {
         const first = this.graph[startNode.row][startNode.column];
         first.gScore = 0;
-        first.hScore = Math.abs(first.row - endNode.row) + Math.abs(first.column - endNode.column); 
+        first.hScore = Math.sqrt(Math.pow(first.row - endNode.row, 2) + Math.pow(first.column - endNode.column, 2)); 
         first.fScore = first.gScore + first.hScore;
 
         const queue = [first];
@@ -57,7 +59,7 @@ export class AStar {
     };
 
     calculateScores = async (queue: INode[], currentNode: INode, endNode: INode) => {
-        const neighbors = NeighborHelper.getNeighbors(this.graph, currentNode, this.boundaries, false); 
+        const neighbors = NeighborHelper.getNeighbors(this.graph, currentNode, this.boundaries, this.diagonalSearch); 
 
         for(let neighbor of neighbors) {
             const isValidType = neighbor.type === this.traverse || neighbor.type === "end" || neighbor.type === "start";
@@ -66,7 +68,7 @@ export class AStar {
             if(neighbor.state === "visited") continue;
 
             neighbor.gScore = currentNode.gScore + 1;
-            neighbor.hScore = Math.abs(neighbor.row - endNode.row) + Math.abs(neighbor.column - endNode.column); 
+            neighbor.hScore = Math.sqrt(Math.pow(neighbor.row - endNode.row, 2) + Math.pow(neighbor.column - endNode.column, 2)); 
             neighbor.fScore = neighbor.gScore + neighbor.hScore;
 
             if(currentNode.gScore < neighbor.gScore){
@@ -76,7 +78,7 @@ export class AStar {
             }
 
             if(neighbor.gScore < currentNode.gScore){
-                currentNode.previous = neighbor;
+                currentNode.previous = neighbor.previous;
                 this.path = [];
                 this.drawPath(currentNode);
             }

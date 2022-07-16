@@ -16,6 +16,7 @@ const App = () => {
   const [delay, setDelay] = React.useState<number>(1);
   const [traverse, setTraverse] = React.useState<NodeType>("empty");
   const [boundaries, setBoundaries] = React.useState<boolean>(true);
+  const [diagonalSearch, setDiagonalSearch] = React.useState<boolean>(false);
   const [animate, setAnimate] = React.useState<boolean>(true);
 
   const [gridAction, setGridAction] = React.useState<GridAction>("none");
@@ -60,6 +61,7 @@ const App = () => {
             </FormGroup>
             <FormGroup sx={{m: 1}} row>
               <FormControlLabel control={<Checkbox checked={boundaries} onChange={e => setBoundaries(e.currentTarget.checked)}/>} label="Boundaries" />
+              <FormControlLabel control={<Checkbox checked={diagonalSearch} onChange={e => setDiagonalSearch(e.currentTarget.checked)}/>} label="Diagonal Search" />
             </FormGroup>
             <FormGroup sx={{m: 1, justifyContent: "space-between"}} row>
               <TextField type={"number"} label="Rows" size="small" value={rows} sx={{width: 70}} onChange={e => setRows(+e.target.value)}/>
@@ -91,6 +93,7 @@ const App = () => {
           delay={delay}
           traverse={traverse}
           boundaries={boundaries}
+          diagonalSearch={diagonalSearch}
           animate={animate}
           algorithm={algorithm}
           action={gridAction}

@@ -17,6 +17,7 @@ export interface IPathfinderGridProps {
     nodeSize: number;
     delay: number;
     boundaries: boolean;
+    diagonalSearch: boolean;
     animate: boolean;
     traverse: NodeType;
     algorithm: GridAlgorithm;
@@ -116,7 +117,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
     const handleDijkstra = async () => {
         handleReset();
         if(startNode && endNode){
-            const alg: Dijkstra = new Dijkstra(grid, props.traverse, props.boundaries, props.delay);
+            const alg: Dijkstra = new Dijkstra(grid, props.traverse, props.boundaries, props.diagonalSearch, props.delay);
 
             if(props.animate)
             {
@@ -135,14 +136,14 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
     const handleAStar = async () => {
         handleReset();
         if(startNode && endNode){
-            const alg: AStar = new AStar(grid, props.traverse, props.boundaries, props.delay);
+            const alg: AStar = new AStar(grid, props.traverse, props.boundaries, props.diagonalSearch, props.delay);
 
             if(props.animate)
             {
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
-                alg.dequeued = nodePointed;
-                alg.pathUpdated = pathUpdated;
+                // alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                // alg.dequeued = nodePointed;
+                // alg.pathUpdated = pathUpdated;
             }
 
             await alg.search(startNode, endNode);
