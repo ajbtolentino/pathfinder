@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, Grid as MuiGrid, Radio, RadioGroup, StepLabel, TextField } from "@mui/material";
+import { FormControl, FormControlLabel, FormLabel, Grid as MuiGrid, Radio, RadioGroup } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import INode, { NodeState, NodeType } from "../../models/INode";
 import Node from "../Node/Node";
@@ -122,6 +122,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             {
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
                 alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                // alg.dequeued = nodePointed;
                 // alg.pathUpdated = pathUpdated;
             }
 
@@ -140,11 +141,13 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             {
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
                 alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                alg.dequeued = nodePointed;
+                alg.pathUpdated = pathUpdated;
             }
 
-            const endNode = await alg.search();
+            await alg.search(startNode, endNode);
 
-            console.log(endNode);
+            pathUpdated(alg.path);
         }
     };
 

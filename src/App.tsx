@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Checkbox, Drawer, FormControl, FormControlLabel, FormGroup, FormLabel, InputLabel, List, ListItem, ListItemButton, ListItemIcon, ListItemText, MenuItem, Select, TextField, Toolbar, Typography } from '@mui/material';
+import { Button, ButtonGroup, Checkbox, Drawer, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { Box } from '@mui/system';
 import './App.css';
 import Grid, { GridAction, GridAlgorithm } from './components/Grid/Grid';
@@ -9,9 +9,9 @@ const drawerWidth = 260;
 
 const App = () => {
   const [algorithm, setAlgorithm] = React.useState<GridAlgorithm>("astar");
-  const [rows, setRows] = React.useState<number>(20);
-  const [columns, setColumns] = React.useState<number>(30);
-  const [nodeSize, setNodeSize] = React.useState<number>(30);
+  const [rows, setRows] = React.useState<number>(30);
+  const [columns, setColumns] = React.useState<number>(50);
+  const [nodeSize, setNodeSize] = React.useState<number>(20);
 
   const [delay, setDelay] = React.useState<number>(1);
   const [traverse, setTraverse] = React.useState<NodeType>("empty");

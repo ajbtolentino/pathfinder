@@ -1,14 +1,15 @@
 @keyframes zoom {
   0% {transform: scale(1, 1);}
-  50% {transform: scale(1.05, 1.05);}
+  50% {transform: scale(1.15, 1.15);}
   100% {transform: scale(1, 1);}
 }
 
 .node {
-  border: 1px solid black !important;
-  margin: .5px !important;
+  outline: .5px solid black !important;
   transition: transform .2s;
   background-color: white;
+  animation: zoom;
+  animation-duration: 1ms;
 }
 
 .node:hover {
@@ -28,8 +29,9 @@
 .node-wall.node-state-visited,
 .node-state-visited {
   background-color: dodgerblue !important;
-  animation: zoom;
-  animation-duration: 500ms;
+  /* transition: all 500ms; */
+  /* animation: zoom; */
+  /* animation-duration: 500ms; */
 }
 
 .node-type-start {
@@ -42,7 +44,10 @@
 
 .node-state-visited.node-path,
 .node-path {
-  background-color: rgb(245, 182, 72);
+  background-color: aquamarine;
+  transition: all 500ms;
+  /* animation: zoom; */
+  /* animation-delay: 5s; */
 }
 
 .node-type-end {

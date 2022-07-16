@@ -26,7 +26,7 @@ export const useGrid = (rows: number, columns: number) => {
                     column: y,
                     type: "empty",
                     state: "unvisited",
-                    fScore: 0,
+                    fScore: Infinity,
                     gScore: Infinity,
                     hScore: 0,
                     distance: Infinity

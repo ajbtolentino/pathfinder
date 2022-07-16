@@ -4,15 +4,15 @@ import INode, { NodeState, NodeType } from "../models/INode";
 
 export class AStar {
     graph: INode[][];
-    startNode: INode | undefined;
-    endNode: INode | undefined;
     traverse: NodeType;
     totalIterations: number;
     boundaries: boolean;
     delay: number;
+    path: INode[];
     visited?: (row: number, column: number) => void;
     dequeued?: (row: number, column: number) => void;
     queued?: (row: number, column: number) => void;
+    pathUpdated?: (path: INode[]) => void;
 
     constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, delay: number = 0) {
         this.graph = [...graph.map(rowNodes => {
@@ -22,15 +22,6 @@ export class AStar {
                     state: "unvisited"
                 };
 
-                if(aStarNode.type === "start") {
-                    aStarNode.gScore = 0;
-                    this.startNode = aStarNode;
-                }
-
-                if(aStarNode.type === "end"){
-                    this.endNode = aStarNode;
-                }
-
                 return aStarNode;
             })];
         })];
@@ -38,64 +29,65 @@ export class AStar {
         this.totalIterations = 0;
         this.boundaries = boundaries;
         this.delay = delay;
-        
+        this.path = [];
     }
 
-    search = async () => {
-        if(!this.startNode || !this.endNode) return;
+    search = async (startNode: INode, endNode: INode) => {
+        const first = this.graph[startNode.row][startNode.column];
+        first.gScore = 0;
+        first.hScore = Math.abs(first.row - endNode.row) + Math.abs(first.column - endNode.column); 
+        first.fScore = first.gScore + first.hScore;
 
-        const first = this.graph[this.startNode.row][this.startNode.column];
-        let queue = [first];
+        const queue = [first];
 
-        while(queue.length > 0) {
+        while(queue.length) {
             this.totalIterations++;
 
             const current = await this.dequeue(queue);
 
             if(!current) continue;
-            if(current.type === "end") return current;
+            if(current.type === "end") break;
             if(current.state === "visited") continue;
 
             await this.visit(current);
-            await this.calculate(queue, current);        
-            queue = queue.sort(_ => _.fScore);    
+            await this.calculateScores(queue, current, endNode);   
         }
+
+        return this.graph;
     };
 
-    calculate = async (queue: INode[], currentNode: INode) => {
-        if(!this.startNode || !this.endNode) return;
-
-        const neighbors = NeighborHelper.getNeighbors(this.graph, currentNode, this.boundaries); 
+    calculateScores = async (queue: INode[], currentNode: INode, endNode: INode) => {
+        const neighbors = NeighborHelper.getNeighbors(this.graph, currentNode, this.boundaries, false); 
 
         for(let neighbor of neighbors) {
             const isValidType = neighbor.type === this.traverse || neighbor.type === "end" || neighbor.type === "start";
-            const isUnvisited = isValidType && neighbor.state === "unvisited";
 
-            if(!isUnvisited) continue;
+            if(!isValidType) continue;
+            if(neighbor.state === "visited") continue;
 
-            if(currentNode.gScore < neighbor.gScore) {
-                neighbor.gScore = currentNode.gScore + 1;
-            }
-
-            neighbor.hScore = (neighbor.row + this.endNode.row) + (neighbor.column + this.endNode.column); //Calculate Manhattan distance
+            neighbor.gScore = currentNode.gScore + 1;
+            neighbor.hScore = Math.abs(neighbor.row - endNode.row) + Math.abs(neighbor.column - endNode.column); 
             neighbor.fScore = neighbor.gScore + neighbor.hScore;
 
-            if(!queue.some(_ => neighbor.hScore < _.hScore))
-                this.queue(queue, neighbor);
+            if(currentNode.gScore < neighbor.gScore){
+                neighbor.previous = currentNode;
+                this.path = [];
+                this.drawPath(neighbor);
+            }
+
+            if(neighbor.gScore < currentNode.gScore){
+                currentNode.previous = neighbor;
+                this.path = [];
+                this.drawPath(currentNode);
+            }
+
+            this.queue(queue, neighbor);
+
+            if(neighbor.type === "end") {
+                neighbor.previous = currentNode;
+                break;
+            }
         }
-
-        return null;
-    }
-
-    dequeue = async (queue: INode[]) => {
-        const curretNode = queue.pop();
-
-        if(curretNode && this.dequeued){
-            this.dequeued(curretNode.row, curretNode.column);
-            await wait(this.delay);
-        }
-
-        return curretNode;
     }
 
     visit = async (node: INode) => {
@@ -108,11 +100,36 @@ export class AStar {
     }
 
     queue = async (queue: INode[], node: INode) => {
-        queue.unshift(node);
+        queue.push(node);
 
         if(this.queued) {
             this.queued(node.row, node.column);
             await wait(this.delay);
         }
+    }
+
+    dequeue = async (queue: INode[]) => {
+        queue.sort((a,b) => a.hScore - b.hScore);
+        const curretNode = queue.shift();
+
+        if(curretNode && this.dequeued){
+            this.dequeued(curretNode.row, curretNode.column);
+            await wait(this.delay);
+        }
+
+        return curretNode;
+    }
+
+    drawPath = async (node: INode) => {
+        if(!node) return;
+
+        this.path.push(node);
+
+        if(node.previous) this.drawPath(node.previous);
+
+        if(this.pathUpdated) {
+            this.pathUpdated([...this.path]);
+            await wait(this.delay);
+        } 
     }
 }

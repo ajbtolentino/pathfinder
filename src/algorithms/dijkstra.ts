@@ -99,7 +99,7 @@ export class Dijkstra {
     }
 
     dequeue = async (queue: INode[]) => {
-        const current = queue.pop();
+        const current = queue.sort(_ => _.fScore).pop();
 
         if(current && this.dequeued){
             this.dequeued(current.row, current.column);
