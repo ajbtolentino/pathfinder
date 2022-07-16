@@ -141,8 +141,8 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             if(props.animate)
             {
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                // alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
-                // alg.dequeued = nodePointed;
+                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                alg.dequeued = nodePointed;
                 // alg.pathUpdated = pathUpdated;
             }
 
