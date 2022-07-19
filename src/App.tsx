@@ -1,7 +1,7 @@
-import { Button, ButtonGroup, Checkbox, Drawer, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Checkbox, Drawer, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { Box } from '@mui/system';
 import './App.css';
-import Grid, { GridAction, GridAlgorithm } from './components/Grid/Grid';
+import Grid, { GridAlgorithm } from './components/Grid/Grid';
 import React from 'react';
 import { NodeType } from './models/INode';
 
@@ -18,13 +18,6 @@ const App = () => {
   const [boundaries, setBoundaries] = React.useState<boolean>(true);
   const [diagonalSearch, setDiagonalSearch] = React.useState<boolean>(false);
   const [animate, setAnimate] = React.useState<boolean>(true);
-
-  const [gridAction, setGridAction] = React.useState<GridAction>("none");
-
-  const handleDone = () => {
-    setGridAction("restart");
-    alert("Done!");
-  }
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -74,12 +67,6 @@ const App = () => {
             </FormControl>
             <FormControl sx={{m: 1}}>
             </FormControl>
-
-            <ButtonGroup sx={{m: 1}}>
-              <Button disabled={gridAction === "start"} onClick={() => setGridAction("start")}>Start</Button>
-              <Button disabled={gridAction === "reset" || gridAction === "none"} onClick={() => setGridAction("reset")}>Reset</Button>
-              <Button disabled={gridAction === "clear" || gridAction === "none"} onClick={() => setGridAction("clear")}>Clear</Button>
-            </ButtonGroup>
           </FormGroup>
         </Drawer>
         <Box 
@@ -96,8 +83,6 @@ const App = () => {
           diagonalSearch={diagonalSearch}
           animate={animate}
           algorithm={algorithm}
-          action={gridAction}
-          done={handleDone}
         />
       </Box>
     </Box>

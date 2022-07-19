@@ -1,4 +1,4 @@
-import { FormControl, FormControlLabel, FormLabel, Grid as MuiGrid, Radio, RadioGroup } from "@mui/material";
+import { Button, ButtonGroup, FormControl, FormControlLabel, FormGroup, FormLabel, Grid as MuiGrid, Radio, RadioGroup } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import INode, { NodeState, NodeType } from "../../models/INode";
 import Node from "../Node/Node";
@@ -7,11 +7,10 @@ import { DepthFirst } from "../../algorithms/depthFirst";
 import { BreadthFirst } from "../../algorithms/breadthFirst";
 import { Dijkstra } from "../../algorithms/dijkstra";
 import { AStar } from "../../algorithms/aStar";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
 export type GridAlgorithm = "dfs-stack" | "dfs-recursive" | "bfs" | "dijkstra" | "astar" | "count";
-export type GridAction = "start" | "reset" | "clear" | "none" | "restart";
 
 export interface IPathfinderGridProps {
     columns: number;
@@ -23,30 +22,15 @@ export interface IPathfinderGridProps {
     animate: boolean;
     traverse: NodeType;
     algorithm: GridAlgorithm;
-    action?: GridAction;
     done?: () => void;
 }
 
 export const Grid: React.FC<IPathfinderGridProps> = (props) => {
     const { grid, startNode, endNode, initialize, setNodeType } = useGrid(props.rows, props.columns);
     const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
+    const [isShiftPressed, setIsShiftPressed] = useState<boolean>(false);
 
-    useEffect(() => {
-        switch(props.action) {
-            case "start":
-                start();
-                break;
-            case "reset":
-                handleReset();
-                break;
-            case "clear":
-                handleReset();
-                initialize();
-                break;
-        }
-    }, [props.action]);
-
-    const start = () => {
+    const handleStart = () => {
         switch(props.algorithm) {
             case "bfs":
                 handleBreadthFirst();
@@ -69,7 +53,18 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             default:
                 console.log("Invalid algorithm!");
         }
-    }
+    };
+
+    const handleClear = () => {
+        handleReset();
+        initialize();
+    };
+
+    const handleReset = () => {
+        document.querySelectorAll(".node").forEach(node => {
+            node.classList.remove("node-state-visited", "node-path", "node-state-queued", "node-state-stacked", "node-current");
+        })
+    };
 
     const handleDfsStack = async () => {
         handleReset();
@@ -119,9 +114,9 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             if(props.animate)
             {
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                // alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
-                // alg.dequeued = nodePointed;
-                // alg.pathUpdated = pathUpdated;
+                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                alg.dequeued = nodePointed;
+                alg.pathUpdated = pathUpdated;
             }
 
             await alg.search(startNode);
@@ -184,26 +179,6 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
         }
     };
 
-    const completed = (graph: INode[][]) => {
-        const tempVisited: INode[] = [];
-        const tempQueued: INode[] = [];
-
-        graph.forEach(rowNodes => {
-            rowNodes.forEach(node => {
-                if(node.state === "visited")
-                    tempVisited.push({...node});
-                if(node.state === "queued")
-                    tempQueued.push({...node});
-            });
-        });
-    };
-
-    const handleReset = () => {
-        document.querySelectorAll(".node").forEach(node => {
-            node.classList.remove("node-state-visited", "node-path", "node-state-queued", "node-state-stacked", "node-current");
-        })
-    }
-
     const handleCountGroup = async () => {
         const dfs = new DepthFirst(grid, props.traverse, props.boundaries, props.delay);
         let count = 0;
@@ -233,15 +208,9 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
         if(e.button === 0) setIsMouseDown(true);
     };
 
-    const [isShiftPressed, setIsShiftPressed] = useState<boolean>(false);
-
     const onTypeDropped = (node: INode, type: NodeType) => {
         setNodeType(node, type);
         setIsMouseDown(false);
-        if(props.action === "start"){
-            handleReset();
-            start();
-        } 
     };
 
     const renderColumns = (columns: INode[]) => {
@@ -256,6 +225,13 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
     return(
     <>
+        <FormGroup>
+            <ButtonGroup sx={{m: 1, justifyContent: "center"}}>
+                <Button onClick={handleStart}>Start</Button>
+                <Button onClick={handleReset}>Reset</Button>
+                <Button onClick={handleClear}>Clear</Button>
+            </ButtonGroup>
+        </FormGroup>
         <DndProvider backend={HTML5Backend}>
             <MuiGrid tabIndex={0} container overflow={"visible"} width={"auto"} 
                      onKeyDown={(e) => setIsShiftPressed(e.key === "Shift")}
