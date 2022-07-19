@@ -43,14 +43,16 @@ export class AStar {
         const queue = [first];
 
         while(queue.length) {
-            queue.sort((a,b) => a.hScore - b.hScore);
+            queue.sort((a,b) => a.fScore - b.fScore);
 
             const curretNode = await this.dequeue(queue);
 
             if(!curretNode) continue;
 
-            if(curretNode.type === "end") break;
-            // if(current.state === "visited") continue;
+            if(curretNode.type === "end") {
+                this.drawPath(curretNode);
+                break;
+            };
 
             await this.visit(curretNode);
             await this.calculateScore(queue, curretNode, endNode);
@@ -67,28 +69,21 @@ export class AStar {
 
             if(!isValidType) continue;
 
-            if(neighbor.state === "visited" && neighbor.gScore < currentNode.previous!.gScore) {
-                currentNode.previous = neighbor;
-                continue;
-            }
-
             if(neighbor.state === "unvisited") {
                 neighbor.gScore = currentNode.gScore + 1;
                 neighbor.hScore = Math.abs(neighbor.row - endNode.row) + Math.abs(neighbor.column - endNode.column); 
                 neighbor.fScore = neighbor.gScore + neighbor.hScore;
-
                 neighbor.previous = currentNode;
 
                 this.queue(queue, neighbor);
             }
 
-            if(neighbor.type === "end") {
+            if(neighbor.state === "queued" && currentNode.fScore < neighbor.fScore) {
+                neighbor.gScore = currentNode.gScore + 1;
+                neighbor.fScore = neighbor.gScore + neighbor.hScore;
                 neighbor.previous = currentNode;
-                this.drawPath(neighbor);
             }
         }
-
-        return false;
     }
 
     visit = async (node: INode) => {

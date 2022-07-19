@@ -7,6 +7,8 @@ import { DepthFirst } from "../../algorithms/depthFirst";
 import { BreadthFirst } from "../../algorithms/breadthFirst";
 import { Dijkstra } from "../../algorithms/dijkstra";
 import { AStar } from "../../algorithms/aStar";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 export type GridAlgorithm = "dfs-stack" | "dfs-recursive" | "bfs" | "dijkstra" | "astar" | "count";
 export type GridAction = "start" | "reset" | "clear" | "none" | "restart";
@@ -26,13 +28,8 @@ export interface IPathfinderGridProps {
 }
 
 export const Grid: React.FC<IPathfinderGridProps> = (props) => {
-    const { grid, startNode, endNode, initialize, update, setNodeType } = useGrid(props.rows, props.columns);
-    const [selectedType, setSelectedType] = useState<NodeType>("start");
+    const { grid, startNode, endNode, initialize, setNodeType } = useGrid(props.rows, props.columns);
     const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
-
-    const handleNodeHovered = (node: INode) => {
-        if(isMouseDown) setNodeType(node, selectedType);
-    };
 
     useEffect(() => {
         switch(props.action) {
@@ -122,7 +119,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             if(props.animate)
             {
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                // alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
                 // alg.dequeued = nodePointed;
                 // alg.pathUpdated = pathUpdated;
             }
@@ -141,9 +138,9 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             if(props.animate)
             {
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
-                alg.dequeued = nodePointed;
-                // alg.pathUpdated = pathUpdated;
+                // alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                // alg.dequeued = nodePointed;
+                alg.pathUpdated = pathUpdated;
             }
 
             await alg.search(startNode, endNode);
@@ -188,7 +185,6 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
     };
 
     const completed = (graph: INode[][]) => {
-        update(graph);
         const tempVisited: INode[] = [];
         const tempQueued: INode[] = [];
 
@@ -200,10 +196,6 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
                     tempQueued.push({...node});
             });
         });
-    };
-
-    const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-        if(e.button === 0) setIsMouseDown(true);
     };
 
     const handleReset = () => {
@@ -233,41 +225,48 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
         if(props.done) props.done();
     };
 
-    const handleSetNodeType = async (node: INode) => {
-        setNodeType(node, selectedType);
-    }
+    const onToggleEmpty = async (node: INode) => {
+        if(node.type === "empty") setNodeType(node, "wall");
+        if(node.type === "wall") setNodeType(node, "empty");
+    };
+
+    const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+        if(e.button === 0) setIsMouseDown(true);
+    };
+
+    const onTypeDropped = (node: INode, type: NodeType) => {
+        setNodeType(node, type);
+        setIsMouseDown(false);
+        if(props.action === "start"){
+            handleReset();
+            start();
+        } 
+    };
 
     const renderColumns = (columns: INode[]) => {
         return columns.map((node, i) => <Node key={`node-${node.row}-${node.column}-${i}`}
                                               node={node}
                                               size={props.nodeSize} 
-                                              onClick={() => handleSetNodeType(node)}
-                                              hovered={handleNodeHovered}
+                                              isMouseDown={isMouseDown}
+                                              onToggleEmpty={() => onToggleEmpty(node)}
+                                              onTypeDropped={(type) => onTypeDropped(node, type)}
                                               />);  
     };
 
     return(
     <>
-        <FormControl>
-            <FormLabel>Draw</FormLabel>
-            <RadioGroup row>
-            <FormControlLabel value="start" control={<Radio />} label="Start" onClick={() => setSelectedType("start")} checked={selectedType === "start"}/>
-            <FormControlLabel value="wall" control={<Radio />} label="Wall"  onClick={() => setSelectedType("wall")} checked={selectedType === "wall"}/>
-            <FormControlLabel value="empty" control={<Radio />} label="Empty"  onClick={() => setSelectedType("empty")} checked={selectedType === "empty"}/>
-            {
-                (props.algorithm === "dijkstra" || props.algorithm === "astar") &&
-                <FormControlLabel value="end" control={<Radio />} label="End"  onClick={() => setSelectedType("end")} checked={selectedType === "end"}/>
-            }
-            </RadioGroup>
-        </FormControl>
-        <MuiGrid container overflow={"visible"} width={"auto"} onMouseDown={handleMouseDown} onMouseUp={() => setIsMouseDown(false)}>
-            {
-                grid.map((row, x) => 
-                <MuiGrid key={`row-${x}`} container flexWrap={"nowrap"} justifyContent={"center"}>
-                    {renderColumns(row)}
-                </MuiGrid>)
-            }
-        </MuiGrid>
+        <DndProvider backend={HTML5Backend}>
+            <MuiGrid container overflow={"visible"} width={"auto"} 
+                     onMouseDown={handleMouseDown} 
+                     onMouseUp={() => setIsMouseDown(false)}>
+                {
+                    grid.map((row, x) => 
+                    <MuiGrid key={`row-${x}`} container flexWrap={"nowrap"} justifyContent={"center"}>
+                        {renderColumns(row)}
+                    </MuiGrid>)
+                }
+            </MuiGrid>
+        </DndProvider>
     </>
     );
 };

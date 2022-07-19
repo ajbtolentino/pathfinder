@@ -1,13 +1,17 @@
-import { Grid, Paper } from "@mui/material";
+import { Box, Grid, Paper } from "@mui/material";
 import React from "react";
 import { useEffect, useMemo, useState } from "react";
+import { useDrop } from "react-dnd";
 import INode, { NodeState, NodeType } from "../../models/INode";
+import { NodeEnd } from "./NodeEnd";
+import { NodeStart } from "./NodeStart";
 
 export interface INodeProps {
     node: INode;
     size: number;
-    onClick: () => void;
-    hovered?: (node: INode) => void;
+    isMouseDown: boolean;
+    onToggleEmpty: () => void;
+    onTypeDropped: (type: NodeType) => void;
 }
 
 export const Node = React.memo((props: INodeProps) => {
@@ -17,7 +21,6 @@ export const Node = React.memo((props: INodeProps) => {
         setNode({...props.node});
     }, [props.node]);
 
-
     const getTypeStyle = () => {
         return `node-type-${node.type}`;
     };
@@ -26,17 +29,85 @@ export const Node = React.memo((props: INodeProps) => {
         return `node node-state-transition ${getTypeStyle()}`;
     };
 
-    const handleMouseEnter = () => {
-        if(props.hovered) props.hovered(props.node);
+    const [{ isOver, canDrop }, drop] = useDrop(() => ({
+        accept: "node",
+        drop: (item: {type: string}) => typeDropped(item.type),
+        canDrop: () => props.node.type === "empty",
+        collect: monitor => ({
+          isOver: !!monitor.isOver(),
+          canDrop: !!monitor.canDrop()
+        }),
+      }), [props]);
+
+    const typeDropped = (type: string) => {
+        props.onTypeDropped(type === "start" ? "start" : "end")
+    }
+
+    const onMouseEnter = () => {
+        if(props.isMouseDown) props.onToggleEmpty();
     };
 
     return (
-        <Grid id={`node-${node.row}-${node.column}`}
-              item width={props.size} height={props.size} 
-              onClick={() => props.onClick()} 
-              onMouseEnter={handleMouseEnter} 
-              className={getClassName()}>
-        </Grid>
+        <div ref={drop} style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+          }}>
+            <Grid id={`node-${node.row}-${node.column}`}
+                item height={props.size}               
+                onClick={() => props.onToggleEmpty()} 
+                onMouseEnter={onMouseEnter} 
+                className={getClassName()}>
+                {
+                    node.type === "start" && <NodeStart size={props.size}/>
+                }
+                {
+                    node.type === "end" && <NodeEnd size={props.size} />
+                }
+                {!isOver && canDrop && (
+                    <div
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        height: '100%',
+                        width: '100%',
+                        zIndex: 1,
+                        opacity: 0.5,
+                        backgroundColor: 'yellow',
+                    }}
+                    />
+                )}
+                {isOver && canDrop && (
+                    <div
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        height: '100%',
+                        width: '100%',
+                        zIndex: 1,
+                        opacity: 0.5,
+                        backgroundColor: 'green',
+                    }}
+                    />
+                )}
+                {isOver && !canDrop && (
+                    <div
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        height: '100%',
+                        width: '100%',
+                        zIndex: 1,
+                        opacity: 0.5,
+                        backgroundColor: 'red',
+                    }}
+                    />
+                )}
+            </Grid>
+        </div>
     )
 });
 

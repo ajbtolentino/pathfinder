@@ -1,12 +1,14 @@
 .node {
   outline: .5px solid black !important;
-  transition: transform .2s;
+  width: auto;
   background-color: white;
 }
 
+.node-state-transition {
+  /* transition: transform .2s; */
+  transition: all 100ms;
+}
 
-
-.node-state-visited.node-current,
 .node-current {
   background-color: violet !important;
 }
@@ -16,14 +18,20 @@
   background-color: lightpink;
 }
 
-.node-wall.node-state-visited,
 .node-state-visited {
   background-color: dodgerblue !important;
-  transition: all 500ms;
 }
 
 .node-type-start {
-  background-color: limegreen !important;
+  display: flex;
+  color: green;
+  background-color: white !important;
+}
+
+.node-type-end {
+  display: flex;
+  color: brown !important;
+  background-color: white !important;
 }
 
 .node-type-wall {
@@ -33,11 +41,4 @@
 .node-state-visited.node-path,
 .node-path {
   background-color: aquamarine;
-  transition: all 500ms;
-  /* animation: zoom; */
-  /* animation-delay: 5s; */
-}
-
-.node-type-end {
-  background-color: lightcoral !important;
 }
