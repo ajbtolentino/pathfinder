@@ -14,6 +14,7 @@ export const NodeEnd = (props: {size: number}) => {
         <SportsScoreIcon  
             style={{
                 fontSize: props.size,
+                display: "flex",
                 opacity: isDragging ? 0.5 : 1,
                 cursor: 'move'}} />
     </div>;

@@ -22,6 +22,16 @@ export default class NeighborHelper {
         if(left) neighbors.push(left);
         if(topLeft && includeCorners) neighbors.push(topLeft);
 
+        // const dx = [-1, 0, 1];
+        // const dy = [-1, 0, 1];
+
+        // for(let x = 0; x < dx.length; x++) {
+        //     for(let y = 0; y < dy.length; y++) {
+        //         const neighbor = NeighborHelper.getNeighbor(graph, node.row + dx[x], node.column + dy[y], boundaries);
+        //         if(neighbor) neighbors.push(neighbor);
+        //     }   
+        // }
+
         return neighbors;
     }
 

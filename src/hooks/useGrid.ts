@@ -38,11 +38,14 @@ export const useGrid = (rows: number, columns: number) => {
             tempGrid.push(currentRow);
         };
 
-        tempGrid[0][0].type = "start";
-        tempGrid[0][1].type = "end";
-        setStartNode(tempGrid[0][0]);
-        setEndNode(tempGrid[0][1]);
-        setGrid(tempGrid);
+        if(rows > 1 && columns > 1)
+        {
+            tempGrid[Math.floor(rows * .5)][Math.floor(columns * .25)].type = "start";
+            tempGrid[Math.floor(rows * .5)][Math.floor(columns * .75)].type = "end";
+            setStartNode(tempGrid[Math.floor(rows * .5)][Math.floor(columns * .25)]);
+            setEndNode(tempGrid[Math.floor(rows * .5)][Math.floor(columns * .75)]);
+            setGrid(tempGrid);
+        }
     };
 
     const setNodeType = (node: INode, type: NodeType) => {

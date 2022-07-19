@@ -50,11 +50,11 @@ export const Node = React.memo((props: INodeProps) => {
     return (
         <div ref={drop} style={{
             position: 'relative',
-            width: '100%',
-            height: '100%',
+            width: props.size,
+            height: props.size,
           }}>
             <Grid id={`node-${node.row}-${node.column}`}
-                item height={props.size}               
+                item height={props.size}     width={props.size}          
                 onClick={() => props.onToggleEmpty()} 
                 onMouseEnter={onMouseEnter} 
                 className={getClassName()}>

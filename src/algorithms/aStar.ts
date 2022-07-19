@@ -78,7 +78,7 @@ export class AStar {
                 this.queue(queue, neighbor);
             }
 
-            if(neighbor.state === "queued" && currentNode.fScore < neighbor.fScore) {
+            if((neighbor.state === "queued" ) && currentNode.fScore < neighbor.fScore) {
                 neighbor.gScore = currentNode.gScore + 1;
                 neighbor.fScore = neighbor.gScore + neighbor.hScore;
                 neighbor.previous = currentNode;
