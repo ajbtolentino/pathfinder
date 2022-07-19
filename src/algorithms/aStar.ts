@@ -69,20 +69,16 @@ export class AStar {
 
             if(!isValidType) continue;
 
-            if(neighbor.state === "unvisited") {
-                neighbor.gScore = currentNode.gScore + 1;
-                neighbor.hScore = Math.abs(neighbor.row - endNode.row) + Math.abs(neighbor.column - endNode.column); 
-                neighbor.fScore = neighbor.gScore + neighbor.hScore;
-                neighbor.previous = currentNode;
+            if(neighbor.state === "visited") continue;
 
-                this.queue(queue, neighbor);
-            }
+            neighbor.gScore = currentNode.gScore + 1;
+            neighbor.hScore = Math.abs(neighbor.row - endNode.row) + Math.abs(neighbor.column - endNode.column); 
+            neighbor.fScore = neighbor.gScore + neighbor.hScore;
+            neighbor.previous = currentNode;
 
-            if((neighbor.state === "queued" ) && currentNode.fScore < neighbor.fScore) {
-                neighbor.gScore = currentNode.gScore + 1;
-                neighbor.fScore = neighbor.gScore + neighbor.hScore;
-                neighbor.previous = currentNode;
-            }
+            if(neighbor.state === "queued") continue;
+
+            await this.queue(queue, neighbor);
         }
     }
 
