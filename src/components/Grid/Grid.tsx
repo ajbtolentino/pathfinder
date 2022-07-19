@@ -138,8 +138,8 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             if(props.animate)
             {
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-                // alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
-                // alg.dequeued = nodePointed;
+                alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
+                alg.dequeued = nodePointed;
                 alg.pathUpdated = pathUpdated;
             }
 
@@ -200,7 +200,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
     const handleReset = () => {
         document.querySelectorAll(".node").forEach(node => {
-            node.classList.remove("node-state-visited", "node-path", "node-state-queued", "node-state-stacked");
+            node.classList.remove("node-state-visited", "node-path", "node-state-queued", "node-state-stacked", "node-current");
         })
     }
 
@@ -226,13 +226,14 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
     };
 
     const onToggleEmpty = async (node: INode) => {
-        if(node.type === "empty") setNodeType(node, "wall");
-        if(node.type === "wall") setNodeType(node, "empty");
+        setNodeType(node, isShiftPressed ? "empty" : "wall");
     };
 
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
         if(e.button === 0) setIsMouseDown(true);
     };
+
+    const [isShiftPressed, setIsShiftPressed] = useState<boolean>(false);
 
     const onTypeDropped = (node: INode, type: NodeType) => {
         setNodeType(node, type);
@@ -256,7 +257,9 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
     return(
     <>
         <DndProvider backend={HTML5Backend}>
-            <MuiGrid container overflow={"visible"} width={"auto"} 
+            <MuiGrid tabIndex={0} container overflow={"visible"} width={"auto"} 
+                     onKeyDown={(e) => setIsShiftPressed(e.key === "Shift")}
+                     onKeyUp={(e) => setIsShiftPressed(false)}
                      onMouseDown={handleMouseDown} 
                      onMouseUp={() => setIsMouseDown(false)}>
                 {

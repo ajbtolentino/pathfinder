@@ -49,10 +49,10 @@ export class AStar {
 
             if(!curretNode) continue;
 
-            if(curretNode.type === "end") {
-                this.drawPath(curretNode);
-                break;
-            };
+            this.path = [];
+            this.drawPath(curretNode);
+
+            if(curretNode.type === "end") break;
 
             await this.visit(curretNode);
             await this.calculateScore(queue, curretNode, endNode);
@@ -69,16 +69,25 @@ export class AStar {
 
             if(!isValidType) continue;
 
-            if(neighbor.state === "visited") continue;
+            const tempG = currentNode.gScore + 1;
+            
+            if(neighbor.state === "queued" && tempG < neighbor.gScore) {
+                this.visit(neighbor);
+                continue;
+            }
 
-            neighbor.gScore = currentNode.gScore + 1;
-            neighbor.hScore = Math.abs(neighbor.row - endNode.row) + Math.abs(neighbor.column - endNode.column); 
-            neighbor.fScore = neighbor.gScore + neighbor.hScore;
-            neighbor.previous = currentNode;
+            if(neighbor.state === "visited" && tempG < neighbor.gScore) {
+                continue;
+            }
 
-            if(neighbor.state === "queued") continue;
-
-            await this.queue(queue, neighbor);
+            if(neighbor.state === "unvisited") {
+                neighbor.gScore = currentNode.gScore + 1;
+                // neighbor.hScore = Math.pow(neighbor.row - endNode.row, 2) + Math.pow(neighbor.column - endNode.column, 2); 
+                neighbor.hScore = Math.abs(neighbor.row - endNode.row) + Math.abs(neighbor.column - endNode.column); 
+                neighbor.fScore = neighbor.gScore + neighbor.hScore;
+                neighbor.previous = currentNode;
+                await this.queue(queue, neighbor);
+            }
         }
     }
 

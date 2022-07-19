@@ -44,7 +44,7 @@ export const Node = React.memo((props: INodeProps) => {
     }
 
     const onMouseEnter = () => {
-        if(props.isMouseDown) props.onToggleEmpty();
+        if(props.isMouseDown && (props.node.type === "empty" || props.node.type === "wall")) props.onToggleEmpty();
     };
 
     return (
