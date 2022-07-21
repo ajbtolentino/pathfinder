@@ -40,8 +40,6 @@ export class Dijkstra {
 
         const queue = [first];
 
-        let finalNode: INode | undefined | null = null;
-
         while(queue.length > 0) {
             const current = await this.dequeue(queue);
 
@@ -49,13 +47,11 @@ export class Dijkstra {
 
             if(current.state === "visited") continue;
 
-            await this.visit(current);
+            if(current.type === "end") break;
 
-            const isFound = await this.isFound(queue, current);
-            if(isFound) {
-                finalNode = isFound;
-                break;
-            }
+            await this.visit(current);
+            await this.calculateDistance(queue, current);
+            
             this.totalIterations++;
         }
 
@@ -75,7 +71,7 @@ export class Dijkstra {
         } 
     }
 
-    isFound = async (queue: INode[], current: INode) => {
+    calculateDistance = async (queue: INode[], current: INode) => {
         const neighbors = NeighborHelper.getNeighbors(this.graph, current, this.boundaries, this.diagonalSearch); 
 
         for(let neighbor of neighbors) {
@@ -92,8 +88,6 @@ export class Dijkstra {
                 await this.drawPath(neighbor.previous);
             }
 
-            if(neighbor.type === "end") return neighbor;
-            
             await this.queue(queue, neighbor);
         }
 
