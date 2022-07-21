@@ -1,7 +1,7 @@
 import INode from "../models/INode";
 
 export default class NeighborHelper {
-    static getNeighbors = (graph: INode[][], node: INode, boundaries: boolean, includeCorners: boolean = false) : INode[] => {
+    static getNeighbors = (graph: INode[][], node: INode, boundaries: boolean = true, includeCorners: boolean = false) : INode[] => {
         const neighbors: INode[] = [];
 
         const top = NeighborHelper.getNeighbor(graph, node.row - 1, node.column, boundaries);

@@ -11,7 +11,7 @@ export const NodeStart = (props: {size: number}) => {
       }));
       
     return <>
-      <div ref={drag}>
+      <div ref={drag} style={{display: "flex"}}>
           <DirectionsRunIcon 
               style={{
                 display: "flex",

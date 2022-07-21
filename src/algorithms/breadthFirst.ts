@@ -7,14 +7,16 @@ export class BreadthFirst {
     graph: INode[][];
     totalIterations: number;
     boundaries: boolean;
+    diagonalSearch: boolean;
     visited?: (row: number, column: number) => Promise<void>;
     dequeued?: (row: number, column: number) => Promise<void>;
     queued?: (row: number, column: number) => Promise<void>;
 
-    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean) {
+    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean = false, diagonalSearch: boolean = false) {
         this.traverse = traverse;
         this.totalIterations = 0;
         this.boundaries = boundaries;
+        this.diagonalSearch = diagonalSearch;
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
                 const newNode: INode = {...node, state: "unvisited"};
@@ -34,7 +36,7 @@ export class BreadthFirst {
 
             await this.visit(current);
 
-            const neighbors = NeighborHelper.getNeighbors(this.graph, current, this.boundaries); 
+            const neighbors = NeighborHelper.getNeighbors(this.graph, current, this.boundaries, this.diagonalSearch); 
 
             for(let neighbor of neighbors) {
                 if(neighbor.state === "queued" || 

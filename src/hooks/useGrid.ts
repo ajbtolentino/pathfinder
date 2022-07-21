@@ -52,22 +52,35 @@ export const useGrid = (rows: number, columns: number) => {
         grid[node.row][node.column] = {...node, type: type};
 
         if(type === "start" && startNode){
-            grid[startNode.row][startNode.column] = {...startNode, type: "empty"};
+            if(grid[startNode.row][startNode.column].type === "start") 
+                grid[startNode.row][startNode.column] = {...startNode, type: "empty"};
             setStartNode({...node});
         }
 
         if(type === "end" && endNode){
-            grid[endNode.row][endNode.column] = {...endNode, type: "empty"};
+            if(grid[endNode.row][endNode.column].type === "end") 
+                grid[endNode.row][endNode.column] = {...endNode, type: "empty"};
             setEndNode({...node});
         }
 
         setGrid(() => [...grid]);
     };
 
+    const updateGrid = (newGrid: INode[][]) => {
+        const temp = newGrid.map(rowNodes => {
+            return rowNodes.map((node: INode) => {
+                return {...node};
+            });
+        });
+
+        setGrid(() => [...temp]);
+    };
+
     return {
         grid,
         startNode,
         endNode,
+        updateGrid,
         setNodeType,
         initialize
     };

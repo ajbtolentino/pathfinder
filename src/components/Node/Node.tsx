@@ -21,14 +21,6 @@ export const Node = React.memo((props: INodeProps) => {
         setNode({...props.node});
     }, [props.node]);
 
-    const getTypeStyle = () => {
-        return `node-type-${node.type}`;
-    };
-
-    const getClassName = () => {
-        return `node ${getTypeStyle()}`;
-    };
-
     const [{ isOver, canDrop }, drop] = useDrop(() => ({
         accept: "node",
         drop: (item: {type: string}) => typeDropped(item.type),
@@ -50,16 +42,16 @@ export const Node = React.memo((props: INodeProps) => {
     return (
         <div ref={drop} style={{
             backgroundColor: "white",
-            position: 'relative',
-            width: props.size,
-            height: props.size,
+            position: "relative",
             outline: "thin solid hsl(50, 100%, 0%)"
           }}>
-            <Grid id={`node-${node.row}-${node.column}`}
-                item height={props.size}     width={props.size}          
+            <Grid item
+                id={`node-${node.row}-${node.column}`}
+                className={`node node-type-${node.type}`}
+                height={props.size}     
+                width={props.size}          
                 onClick={() => props.onToggleEmpty()} 
-                onMouseEnter={onMouseEnter} 
-                className={getClassName()}>
+                onMouseEnter={onMouseEnter} >
                 {
                     node.type === "start" && <NodeStart size={props.size}/>
                 }

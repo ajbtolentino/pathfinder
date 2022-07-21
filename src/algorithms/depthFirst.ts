@@ -7,14 +7,16 @@ export class DepthFirst {
     traverse: NodeType;
     totalIterations: number;
     boundaries: boolean;
+    diagonalSearch: boolean;
     pointed?: (row: number, column: number) => Promise<void>;
     visited?: (row: number, column: number) => Promise<void>;
     stacked?: (row: number, column: number) => Promise<void>;
 
-    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean){
+    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean = false, diagonalSearch: boolean = false){
         this.traverse = traverse;
         this.totalIterations = 0;
         this.boundaries = boundaries;
+        this.diagonalSearch = diagonalSearch;
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
                 const newNode: INode = {...node, state: "unvisited"};
@@ -63,7 +65,7 @@ export class DepthFirst {
 
         await this.visit(current);
 
-        const neighbors = NeighborHelper.getNeighbors(this.graph, current, this.boundaries); 
+        const neighbors = NeighborHelper.getNeighbors(this.graph, current, this.boundaries, this.diagonalSearch); 
 
         for(let neighbor of neighbors) {
             if(neighbor.state === "visited" || neighbor.type !== this.traverse) continue;

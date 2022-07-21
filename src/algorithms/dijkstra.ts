@@ -9,19 +9,17 @@ export class Dijkstra {
     boundaries: boolean;
     diagonalSearch: boolean;
     path: INode[];
-    delay: number;
-    visited?: (row: number, column: number) => void;
-    dequeued?: (row: number, column: number) => void;
-    queued?: (row: number, column: number) => void;
-    pathUpdated?: (path: INode[]) => void;
+    visited?: (row: number, column: number) => Promise<void>;
+    dequeued?: (row: number, column: number) => Promise<void>;
+    queued?: (row: number, column: number) => Promise<void>;
+    pathUpdated?: (path: INode[]) => Promise<void>;
 
-    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, diagonalSearch: boolean, delay: number = 0) {
+    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, diagonalSearch: boolean) {
         this.traverse = traverse;
         this.totalIterations = 0;
         this.boundaries = boundaries;
         this.diagonalSearch = diagonalSearch;
         this.path = [];
-        this.delay = delay;
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
                 const newNode: INode = {
@@ -67,10 +65,7 @@ export class Dijkstra {
 
         if(node.previous) this.drawPath(node.previous);
 
-        if(this.pathUpdated) {
-            this.pathUpdated([...this.path]);
-            await wait(this.delay);
-        } 
+        if(this.pathUpdated) await this.pathUpdated([...this.path]);
     }
 
     calculateDistance = async (queue: INode[], current: INode) => {
@@ -96,10 +91,8 @@ export class Dijkstra {
     dequeue = async (queue: INode[]) => {
         const current = queue.sort(_ => _.fScore).pop();
 
-        if(current && this.dequeued){
-            this.dequeued(current.row, current.column);
-            await wait(this.delay);
-        }
+        if(current && this.dequeued)
+            await this.dequeued(current.row, current.column);
 
         return current;
     }
@@ -107,18 +100,14 @@ export class Dijkstra {
     visit = async (node: INode) => {
         node.state = "visited";
 
-        if(this.visited) {
-            this.visited(node.row, node.column);
-            await wait(this.delay);
-        }
+        if(this.visited) 
+            await this.visited(node.row, node.column);
     }
 
     queue = async (stack: INode[], node: INode) => {
         stack.unshift(node);
 
-        if(this.queued) {
-            this.queued(node.row, node.column);
-            await wait(this.delay);
-        }
+        if(this.queued)
+            await this.queued(node.row, node.column);
     }
 }

@@ -10,8 +10,12 @@ import { AStar } from "../../algorithms/aStar";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { wait } from "@testing-library/user-event/dist/utils";
+import { DepthFirstMaze } from "../../algorithms/depthFirstMaze";
+import { clear } from "console";
+import { NodeStart } from "../Node/NodeStart";
+import { NodeEnd } from "../Node/NodeEnd";
 
-export type GridAlgorithm = "dfs-stack" | "dfs-recursive" | "bfs" | "dijkstra" | "astar" | "count";
+export type GridAlgorithm = "dfs-maze" | "dfs-stack" | "dfs-recursive" | "bfs" | "dijkstra" | "astar" | "count";
 
 export interface IPathfinderGridProps {
     columns: number;
@@ -27,7 +31,7 @@ export interface IPathfinderGridProps {
 }
 
 export const Grid: React.FC<IPathfinderGridProps> = (props) => {
-    const { grid, startNode, endNode, initialize, setNodeType } = useGrid(props.rows, props.columns);
+    const { grid, startNode, endNode, updateGrid, initialize, setNodeType } = useGrid(props.rows, props.columns);
     const [delay, setDelay] = useState<number>(props.delay);
     const [isRunning, setIsRunning] = useState<boolean>(false);
     const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
@@ -61,6 +65,9 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
             case "astar":
                 await runAStar();
                 break;
+            case "dfs-maze":
+                await runDfsMaze();
+                break;
             default:
                 console.log("Invalid algorithm!");
         }
@@ -93,7 +100,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
     const runDfsRecursive = async () => {
         if(startNode){
-            const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries);
+            const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries, props.diagonalSearch);
             if(props.animate){
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
             }
@@ -104,7 +111,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
     const runBfs = async () => {
         if(startNode){
-            const alg: BreadthFirst = new BreadthFirst(grid, props.traverse, props.boundaries);
+            const alg: BreadthFirst = new BreadthFirst(grid, props.traverse, props.boundaries, props.diagonalSearch);
 
             if(props.animate)
             {
@@ -118,19 +125,18 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
     const runDijkstra = async () => {
         if(startNode && endNode){
-            const alg: Dijkstra = new Dijkstra(grid, props.traverse, props.boundaries, props.diagonalSearch, props.delay);
+            const alg: Dijkstra = new Dijkstra(grid, props.traverse, props.boundaries, props.diagonalSearch);
 
             if(props.animate)
             {
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
                 alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
                 alg.dequeued = nodePointed;
-                alg.pathUpdated = pathUpdated;
             }
 
             await alg.search(startNode);
 
-            pathUpdated(alg.path);
+            await pathUpdated(alg.path);
         }
     };
 
@@ -148,9 +154,42 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
             await alg.search(startNode, endNode);
 
-            pathUpdated(alg.path);
+            await pathUpdated(alg.path);
         }
     };
+
+    const runDfsMaze = async () => {
+        setIsRunning(true);
+        reset();
+        
+        grid.forEach(rowNodes => {
+            rowNodes.forEach(node => {
+                const element = document.getElementById(`node-${node.row}-${node.column}`);
+
+                if(element){
+                    element.classList.remove("node-type-wall");
+                    element.classList.add(`node-type-empty`);
+                }
+            });
+        });
+
+        const alg: DepthFirstMaze = new DepthFirstMaze(grid);
+
+        alg.nodeUpdated = async(r, c, u) => {
+            const element = document.getElementById(`node-${r}-${c}`);
+            if(element){
+                element.classList.remove("node-type-wall");
+                element.classList.add(`node-type-${u}`);
+            }
+
+            await wait(props.delay);
+        };
+
+        const updated = await alg.run(startNode?.row ?? 0, startNode?.column ?? 0);
+
+        updateGrid(updated);
+        setIsRunning(false);
+    }
 
     const pathUpdated = async (nodes: INode[]) : Promise<void> => {
         const ids = nodes.map(n => `node-${n.row}-${n.column}`);
@@ -169,7 +208,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
                 element.classList.add("node-path")
         });
 
-        await wait(delay);
+        if(delay) await wait(delay);
     };
 
     const nodePointed = async (row: number, column: number) : Promise<void> => {
@@ -181,7 +220,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
         if(newCurrent) newCurrent.classList.add("node-current");
 
-        await wait(delay);
+        if(delay) await wait(delay);
     };
 
     const nodeStateChanged = async (row: number, column: number, state: NodeState) : Promise<void> => {
@@ -200,7 +239,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
                 break;
         }
 
-        await wait(delay);
+        if(delay) await wait(delay);
     };
 
     const runCountGroup = async () => {
@@ -251,19 +290,28 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
     return(
     <>
-        <FormGroup>
-            <ButtonGroup sx={{m: 1, justifyContent: "center"}}>
-                <Button disabled={isRunning} onClick={runAlgorithm}>Start</Button>
-                <Button disabled={isRunning} onClick={reset}>Reset</Button>
-                <Button disabled={isRunning} onClick={handleClear}>Clear</Button>
-            </ButtonGroup>
-        </FormGroup>
         <DndProvider backend={HTML5Backend}>
+            <FormGroup>
+                <ButtonGroup sx={{m: 1, justifyContent: "center"}}>
+                    <Button disabled={isRunning} onClick={runAlgorithm}>Start</Button>
+                    <Button disabled={isRunning} onClick={reset}>Reset</Button>
+                    <Button disabled={isRunning} onClick={handleClear}>Clear</Button>
+                </ButtonGroup>
+            </FormGroup>
+            <FormGroup>
+                <ButtonGroup sx={{m: 1, justifyContent: "center"}}>
+                    <Button disabled={isRunning} onClick={runDfsMaze}>Create Maze</Button>
+                </ButtonGroup>
+            </FormGroup>
+            {/* <FormGroup style={{display: "flex", flexDirection: "row", justifyContent: "start"}}>
+                {startNode && startNode.type !== "start" && <NodeStart size={props.nodeSize}/>}
+                {endNode && endNode.type !== "end" && <NodeEnd size={props.nodeSize}/> }
+            </FormGroup> */}
             <MuiGrid tabIndex={0} container overflow={"visible"} width={"auto"} 
-                     onKeyDown={(e) => setIsShiftPressed(e.key === "Shift")}
-                     onKeyUp={() => setIsShiftPressed(false)}
-                     onMouseDown={handleMouseDown} 
-                     onMouseUp={() => setIsMouseDown(false)}>
+                        onKeyDown={(e) => setIsShiftPressed(e.key === "Shift")}
+                        onKeyUp={() => setIsShiftPressed(false)}
+                        onMouseDown={handleMouseDown} 
+                        onMouseUp={() => setIsMouseDown(false)}>
                 {
                     grid.map((row, x) => 
                     <MuiGrid key={`row-${x}`} container flexWrap={"nowrap"} justifyContent={"center"}>
