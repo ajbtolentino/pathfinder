@@ -49,9 +49,11 @@ export const Node = React.memo((props: INodeProps) => {
 
     return (
         <div ref={drop} style={{
+            backgroundColor: "white",
             position: 'relative',
             width: props.size,
             height: props.size,
+            outline: ".5px solid black"
           }}>
             <Grid id={`node-${node.row}-${node.column}`}
                 item height={props.size}     width={props.size}          

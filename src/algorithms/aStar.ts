@@ -50,7 +50,7 @@ export class AStar {
             if(!curretNode) continue;
 
             this.path = [];
-            this.drawPath(curretNode);
+            await this.drawPath(curretNode);
 
             if(curretNode.type === "end") break;
 
@@ -69,25 +69,18 @@ export class AStar {
 
             if(!isValidType) continue;
 
-            const tempG = currentNode.gScore + 1;
-            
-            if(neighbor.state === "queued" && tempG < neighbor.gScore) {
-                this.visit(neighbor);
-                continue;
-            }
+            // const tentativeGScore = currentNode.gScore + ((neighbor.row - currentNode.row === 0 || neighbor.column - currentNode.column === 0) ? 1 : Math.SQRT2);
+            const tentativeGScore = currentNode.gScore + 1;
 
-            if(neighbor.state === "visited" && tempG < neighbor.gScore) {
-                continue;
-            }
-
-            if(neighbor.state === "unvisited") {
-                neighbor.gScore = currentNode.gScore + 1;
-                // neighbor.hScore = Math.pow(neighbor.row - endNode.row, 2) + Math.pow(neighbor.column - endNode.column, 2); 
-                neighbor.hScore = Math.abs(neighbor.row - endNode.row) + Math.abs(neighbor.column - endNode.column); 
+            if(neighbor.state === "unvisited" || tentativeGScore < neighbor.gScore) {
+                neighbor.gScore = tentativeGScore;
+                neighbor.hScore = this.diagonalSearch ? Math.pow(neighbor.row - endNode.row, 2) + Math.pow(neighbor.column - endNode.column, 2) : Math.abs(neighbor.row - endNode.row) + Math.abs(neighbor.column - endNode.column); 
                 neighbor.fScore = neighbor.gScore + neighbor.hScore;
                 neighbor.previous = currentNode;
-                await this.queue(queue, neighbor);
             }
+
+            if(neighbor.state === "unvisited") 
+                await this.queue(queue, neighbor);
         }
     }
 

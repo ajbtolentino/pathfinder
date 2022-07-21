@@ -9,9 +9,9 @@ const drawerWidth = 260;
 
 const App = () => {
   const [algorithm, setAlgorithm] = React.useState<GridAlgorithm>("astar");
-  const [rows, setRows] = React.useState<number>(30);
-  const [columns, setColumns] = React.useState<number>(50);
-  const [nodeSize, setNodeSize] = React.useState<number>(20);
+  const [rows, setRows] = React.useState<number>(20);
+  const [columns, setColumns] = React.useState<number>(20);
+  const [nodeSize, setNodeSize] = React.useState<number>(30);
 
   const [delay, setDelay] = React.useState<number>(1);
   const [traverse, setTraverse] = React.useState<NodeType>("empty");

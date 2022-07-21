@@ -1,12 +1,11 @@
-.node {
-  outline: .5px solid black !important;
-  width: auto;
-  background-color: white;
-}
-
-.node-state-transition {
-  /* transition: transform .2s; */
-  transition: all 100ms;
+@keyframes stretch {
+  0% {
+    transform: scale(0);
+    border-radius: 100%;
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .node-current {
@@ -16,10 +15,14 @@
 .node-state-queued,
 .node-state-stacked {
   background-color: lightpink;
+  animation-name: stretch;
+  animation-duration: 1.5s; 
 }
 
 .node-state-visited {
-  background-color: dodgerblue !important;
+  background: #10379e !important;
+  animation-name: stretch;
+  animation-duration: 1.5s; 
 }
 
 .node-type-start {
@@ -35,10 +38,10 @@
 }
 
 .node-type-wall {
-  background-color: gray
+  background-color: black
 }
 
-.node-state-visited.node-path,
 .node-path {
   background-color: aquamarine;
+  transition: all 1s;
 }

@@ -40,10 +40,10 @@ export const useGrid = (rows: number, columns: number) => {
 
         if(rows > 1 && columns > 1)
         {
-            tempGrid[Math.floor(rows * .5)][Math.floor(columns * .25)].type = "start";
-            tempGrid[Math.floor(rows * .5)][Math.floor(columns * .75)].type = "end";
-            setStartNode(tempGrid[Math.floor(rows * .5)][Math.floor(columns * .25)]);
-            setEndNode(tempGrid[Math.floor(rows * .5)][Math.floor(columns * .75)]);
+            tempGrid[0][0].type = "start";
+            tempGrid[rows - 1][columns - 1].type = "end";
+            setStartNode(tempGrid[0][0]);
+            setEndNode(tempGrid[rows - 1][columns - 1]);
             setGrid(tempGrid);
         }
     };
