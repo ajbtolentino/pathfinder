@@ -8,14 +8,13 @@ export class AStar {
     totalIterations: number;
     boundaries: boolean;
     diagonalSearch: boolean;
-    delay: number;
     path: INode[];
-    visited?: (row: number, column: number) => void;
-    dequeued?: (row: number, column: number) => void;
-    queued?: (row: number, column: number) => void;
-    pathUpdated?: (path: INode[]) => void;
+    visited?: (row: number, column: number) => Promise<void>;
+    dequeued?: (row: number, column: number) => Promise<void>;
+    queued?: (row: number, column: number) => Promise<void>;
+    pathUpdated?: (path: INode[]) => Promise<void>;
 
-    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, diagonalSearch: boolean, delay: number = 0, ) {
+    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, diagonalSearch: boolean) {
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
                 const aStarNode: INode = {
@@ -30,7 +29,6 @@ export class AStar {
         this.totalIterations = 0;
         this.boundaries = boundaries;
         this.diagonalSearch = diagonalSearch;
-        this.delay = delay;
         this.path = [];
     }
 
@@ -69,12 +67,12 @@ export class AStar {
 
             if(!isValidType) continue;
 
-            // const tentativeGScore = currentNode.gScore + ((neighbor.row - currentNode.row === 0 || neighbor.column - currentNode.column === 0) ? 1 : Math.SQRT2);
-            const tentativeGScore = currentNode.gScore + 1;
+            const tentativeGScore = currentNode.gScore + ((neighbor.row - currentNode.row === 0 || neighbor.column - currentNode.column === 0) ? 1 : Math.SQRT2);
+            // const tentativeGScore = currentNode.gScore + 1;
 
             if(neighbor.state === "unvisited" || tentativeGScore < neighbor.gScore) {
                 neighbor.gScore = tentativeGScore;
-                neighbor.hScore = this.diagonalSearch ? Math.pow(neighbor.row - endNode.row, 2) + Math.pow(neighbor.column - endNode.column, 2) : Math.abs(neighbor.row - endNode.row) + Math.abs(neighbor.column - endNode.column); 
+                neighbor.hScore = this.diagonalSearch ? Math.sqrt(Math.pow(neighbor.row - endNode.row, 2) + Math.pow(neighbor.column - endNode.column, 2)) : Math.abs(neighbor.row - endNode.row) + Math.abs(neighbor.column - endNode.column); 
                 neighbor.fScore = neighbor.gScore + neighbor.hScore;
                 neighbor.previous = currentNode;
             }
@@ -87,10 +85,7 @@ export class AStar {
     visit = async (node: INode) => {
         node.state = "visited";
 
-        if(this.visited) {
-            this.visited(node.row, node.column);
-            await wait(this.delay);
-        }
+        if(this.visited) await this.visited(node.row, node.column);
     }
 
     queue = async (queue: INode[], node: INode) => {
@@ -98,19 +93,13 @@ export class AStar {
 
         queue.push(node);
 
-        if(this.queued) {
-            this.queued(node.row, node.column);
-            await wait(this.delay);
-        }
+        if(this.queued) await this.queued(node.row, node.column);
     }
 
     dequeue = async (queue: INode[]) => {
         const curretNode = queue.shift();
 
-        if(curretNode && this.dequeued){
-            this.dequeued(curretNode.row, curretNode.column);
-            await wait(this.delay);
-        }
+        if(curretNode && this.dequeued) await this.dequeued(curretNode.row, curretNode.column);
 
         return curretNode;
     }
@@ -122,9 +111,6 @@ export class AStar {
 
         if(node.previous) this.drawPath(node.previous);
 
-        if(this.pathUpdated) {
-            this.pathUpdated([...this.path]);
-            await wait(this.delay);
-        } 
+        if(this.pathUpdated) await this.pathUpdated([...this.path]);
     }
 }

@@ -7,16 +7,14 @@ export class DepthFirst {
     traverse: NodeType;
     totalIterations: number;
     boundaries: boolean;
-    delay: number;
-    pointed?: (row: number, column: number) => void;
-    visited?: (row: number, column: number) => void;
-    stacked?: (row: number, column: number) => void;
+    pointed?: (row: number, column: number) => Promise<void>;
+    visited?: (row: number, column: number) => Promise<void>;
+    stacked?: (row: number, column: number) => Promise<void>;
 
-    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, delay: number = 0){
+    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean){
         this.traverse = traverse;
         this.totalIterations = 0;
         this.boundaries = boundaries;
-        this.delay = delay;
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
                 const newNode: INode = {...node, state: "unvisited"};
@@ -58,10 +56,8 @@ export class DepthFirst {
 
         if(!current) return;
         
-        if(this.pointed) {
-            this.pointed(current.row, current.column);
-            await wait(this.delay);
-        }
+        if(this.pointed)
+            await this.pointed(current.row, current.column);
 
         if(current.state === "visited") return;
 
@@ -86,10 +82,8 @@ export class DepthFirst {
 
         if(!current) return null;
 
-        if(this.pointed) {
-            this.pointed(current.row, current.column);
-            await wait(this.delay);
-        }
+        if(this.pointed)
+            await this.pointed(current.row, current.column);
 
         return current;
     }
@@ -97,19 +91,14 @@ export class DepthFirst {
     visit = async (node: INode) => {
         node.state = "visited";
 
-        if(this.visited) {
-            this.visited(node.row, node.column);
-            await wait(this.delay);
-        }
+        if(this.visited)
+            await this.visited(node.row, node.column);
     }
 
     stack = async (stack: INode[], node: INode) => {
         stack.unshift(node);
 
         if(this.stacked) 
-        {
-            this.stacked(node.row, node.column);
-            await wait(this.delay);
-        }
+            await this.stacked(node.row, node.column);
     }
 } 

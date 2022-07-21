@@ -6,17 +6,15 @@ export class BreadthFirst {
     traverse: NodeType;
     graph: INode[][];
     totalIterations: number;
-    delay: number;
-    visited?: (row: number, column: number) => void;
-    dequeued?: (row: number, column: number) => void;
-    queued?: (row: number, column: number) => void;
     boundaries: boolean;
+    visited?: (row: number, column: number) => Promise<void>;
+    dequeued?: (row: number, column: number) => Promise<void>;
+    queued?: (row: number, column: number) => Promise<void>;
 
-    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, delay: number = 0) {
+    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean) {
         this.traverse = traverse;
         this.totalIterations = 0;
         this.boundaries = boundaries;
-        this.delay = delay;
         this.graph = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
                 const newNode: INode = {...node, state: "unvisited"};
@@ -55,10 +53,8 @@ export class BreadthFirst {
     dequeue = async (queue: INode[]) => {
         const current = queue.pop();
 
-        if(current && this.dequeued) {
-            this.dequeued(current.row, current.column);
-            await wait(this.delay);
-        }
+        if(current && this.dequeued) 
+            await this.dequeued(current.row, current.column);
 
         return current;
     }
@@ -66,18 +62,14 @@ export class BreadthFirst {
     visit = async (node: INode) => {
         node.state = "visited";
 
-        if(this.visited){
-            this.visited(node.row, node.column);
-            await wait(this.delay);
-        }
+        if(this.visited) 
+            await this.visited(node.row, node.column);
     }
 
     queue = async (stack: INode[], node: INode) => {
         stack.unshift(node);
 
-        if(this.queued) {
-            this.queued(node.row, node.column);
-            await wait(this.delay);
-        }
+        if(this.queued) 
+            await this.queued(node.row, node.column);
     }
 }

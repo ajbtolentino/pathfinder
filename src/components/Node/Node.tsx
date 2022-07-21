@@ -12,7 +12,7 @@ export interface INodeProps {
     isMouseDown: boolean;
     onToggleEmpty: () => void;
     onTypeDropped: (type: NodeType) => void;
-}
+};
 
 export const Node = React.memo((props: INodeProps) => {
     const [node, setNode] = useState<INode>({...props.node});
@@ -26,7 +26,7 @@ export const Node = React.memo((props: INodeProps) => {
     };
 
     const getClassName = () => {
-        return `node node-state-transition ${getTypeStyle()}`;
+        return `node ${getTypeStyle()}`;
     };
 
     const [{ isOver, canDrop }, drop] = useDrop(() => ({
@@ -41,7 +41,7 @@ export const Node = React.memo((props: INodeProps) => {
 
     const typeDropped = (type: string) => {
         props.onTypeDropped(type === "start" ? "start" : "end")
-    }
+    };
 
     const onMouseEnter = () => {
         if(props.isMouseDown && (props.node.type === "empty" || props.node.type === "wall")) props.onToggleEmpty();
@@ -53,7 +53,7 @@ export const Node = React.memo((props: INodeProps) => {
             position: 'relative',
             width: props.size,
             height: props.size,
-            outline: ".5px solid black"
+            outline: "thin solid hsl(50, 100%, 0%)"
           }}>
             <Grid id={`node-${node.row}-${node.column}`}
                 item height={props.size}     width={props.size}          

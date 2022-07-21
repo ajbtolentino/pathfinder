@@ -45,8 +45,10 @@ export class Dijkstra {
 
             if(!current) continue;
 
-            if(current.state === "visited") continue;
+            this.path = [];
+            await this.drawPath(current);
 
+            if(current.state === "visited") continue;
             if(current.type === "end") break;
 
             await this.visit(current);
@@ -83,9 +85,6 @@ export class Dijkstra {
             if(current.distance < neighbor.distance) {
                 neighbor.distance = current.distance + 1;
                 neighbor.previous = {...current};
-
-                this.path = [];
-                await this.drawPath(neighbor.previous);
             }
 
             await this.queue(queue, neighbor);

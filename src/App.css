@@ -42,6 +42,6 @@
 }
 
 .node-path {
-  background-color: aquamarine;
+  background-color: aquamarine !important;
   transition: all 1s;
 }

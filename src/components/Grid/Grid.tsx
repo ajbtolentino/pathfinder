@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, FormGroup, Grid as MuiGrid } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import INode, { NodeState, NodeType } from "../../models/INode";
 import Node from "../Node/Node";
 import { useGrid } from "../../hooks/useGrid";
@@ -9,6 +9,7 @@ import { Dijkstra } from "../../algorithms/dijkstra";
 import { AStar } from "../../algorithms/aStar";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { wait } from "@testing-library/user-event/dist/utils";
 
 export type GridAlgorithm = "dfs-stack" | "dfs-recursive" | "bfs" | "dijkstra" | "astar" | "count";
 
@@ -27,9 +28,15 @@ export interface IPathfinderGridProps {
 
 export const Grid: React.FC<IPathfinderGridProps> = (props) => {
     const { grid, startNode, endNode, initialize, setNodeType } = useGrid(props.rows, props.columns);
+    const [delay, setDelay] = useState<number>(props.delay);
     const [isRunning, setIsRunning] = useState<boolean>(false);
     const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
     const [isShiftPressed, setIsShiftPressed] = useState<boolean>(false);
+
+    useEffect(() => {
+        reset();
+        setDelay(() => props.delay);
+    }, [props]);
 
     const runAlgorithm = async () => {
         reset();
@@ -74,7 +81,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
     const runDfsStack = async () => {
         if(startNode){
-            const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries, props.delay);
+            const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries);
             
             if(props.animate){
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
@@ -86,7 +93,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
     const runDfsRecursive = async () => {
         if(startNode){
-            const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries, props.delay);
+            const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries);
             if(props.animate){
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
             }
@@ -97,7 +104,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
     const runBfs = async () => {
         if(startNode){
-            const alg: BreadthFirst = new BreadthFirst(grid, props.traverse, props.boundaries, props.delay);
+            const alg: BreadthFirst = new BreadthFirst(grid, props.traverse, props.boundaries);
 
             if(props.animate)
             {
@@ -129,7 +136,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
 
     const runAStar = async () => {
         if(startNode && endNode){
-            const alg: AStar = new AStar(grid, props.traverse, props.boundaries, props.diagonalSearch, props.delay);
+            const alg: AStar = new AStar(grid, props.traverse, props.boundaries, props.diagonalSearch);
 
             if(props.animate)
             {
@@ -145,43 +152,59 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
         }
     };
 
-    const pathUpdated = async (nodes: INode[]) : Promise<any> => {
+    const pathUpdated = async (nodes: INode[]) : Promise<void> => {
         const ids = nodes.map(n => `node-${n.row}-${n.column}`);
 
-        document.querySelectorAll(".node.node-path").forEach(item => {
-            item.classList.add("node-state-visited");
-            item.classList.remove("node-path");
+        const collection =  document.getElementsByClassName("node-path");
+
+        for (let i = 0; i < collection.length; i++) {
+            const element = collection[i];
+
+            if(element && !ids.includes(element.id)) element.classList.remove("node-path");
+        }
+
+        ids.forEach(id => {
+            const element = document.getElementById(id);
+            if(element && !element.classList.contains("node-path"))
+                element.classList.add("node-path")
         });
 
-        document.querySelectorAll(".node.node-state-visited").forEach(item => {
-            if(ids.includes(item.id) && !item.classList.contains("node-path")) {
-                item.classList.remove("node-state-visited");
-                item.classList.add("node-path");
-            }
-        });
+        await wait(delay);
     };
 
-    const nodePointed = (row: number, column: number) => {
-        document.querySelectorAll(".node").forEach(item => {
-            item.classList.remove("node-current");   
-        });
+    const nodePointed = async (row: number, column: number) : Promise<void> => {
+        const currentPointed = document.getElementsByClassName("node-current");
 
-        document.getElementById(`node-${row}-${column}`)?.classList.add("node-current");
+        if(currentPointed && currentPointed.length > 0) currentPointed.item(0)?.classList.remove("node-current");
+
+        const newCurrent = document.getElementById(`node-${row}-${column}`);
+
+        if(newCurrent) newCurrent.classList.add("node-current");
+
+        await wait(delay);
     };
 
-    const nodeStateChanged = (row: number, column: number, state: NodeState) => {
+    const nodeStateChanged = async (row: number, column: number, state: NodeState) : Promise<void> => {
+        const element = document.getElementById(`node-${row}-${column}`);
+
+        if(!element) return;
+
         switch(state) {
             case "queued":
-                document.getElementById(`node-${row}-${column}`)?.classList.add("node-state-queued");
+                element.classList.remove("node-state-unvisited");
+                element.classList.add("node-state-queued");
                 break;
             case "visited":
-                document.getElementById(`node-${row}-${column}`)?.classList.add("node-state-visited");
+                element.classList.remove("node-state-queued");
+                element.classList.add("node-state-visited");
                 break;
         }
+
+        await wait(delay);
     };
 
     const runCountGroup = async () => {
-        const dfs = new DepthFirst(grid, props.traverse, props.boundaries, props.delay);
+        const dfs = new DepthFirst(grid, props.traverse, props.boundaries);
         let count = 0;
 
         dfs.pointed = nodePointed;
