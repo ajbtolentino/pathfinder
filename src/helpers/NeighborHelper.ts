@@ -1,17 +1,17 @@
 import INode from "../models/INode";
 
 export default class NeighborHelper {
-    static getNeighbors = (graph: INode[][], node: INode, boundaries: boolean = true, includeCorners: boolean = false) : INode[] => {
+    static getNeighbors = (graph: INode[][], node: INode, boundaries: boolean = true, includeCorners: boolean = false, increment: number = 1) : INode[] => {
         const neighbors: INode[] = [];
 
-        const top = NeighborHelper.getNeighbor(graph, node.row - 1, node.column, boundaries);
-        const topRight = NeighborHelper.getNeighbor(graph, node.row - 1, node.column + 1, boundaries);
-        const right = NeighborHelper.getNeighbor(graph, node.row, node.column + 1, boundaries);
-        const bottomRight = NeighborHelper.getNeighbor(graph, node.row + 1, node.column + 1, boundaries);
-        const bottom = NeighborHelper.getNeighbor(graph, node.row + 1, node.column, boundaries);
-        const bottomLeft = NeighborHelper.getNeighbor(graph, node.row + 1, node.column - 1, boundaries);
-        const left = NeighborHelper.getNeighbor(graph, node.row, node.column - 1, boundaries);
-        const topLeft = NeighborHelper.getNeighbor(graph, node.row - 1, node.column - 1, boundaries);
+        const top = NeighborHelper.getNeighbor(graph, node.row - increment, node.column, boundaries);
+        const topRight = NeighborHelper.getNeighbor(graph, node.row - increment, node.column + increment, boundaries);
+        const right = NeighborHelper.getNeighbor(graph, node.row, node.column + increment, boundaries);
+        const bottomRight = NeighborHelper.getNeighbor(graph, node.row + increment, node.column + increment, boundaries);
+        const bottom = NeighborHelper.getNeighbor(graph, node.row + increment, node.column, boundaries);
+        const bottomLeft = NeighborHelper.getNeighbor(graph, node.row + increment, node.column - increment, boundaries);
+        const left = NeighborHelper.getNeighbor(graph, node.row, node.column - increment, boundaries);
+        const topLeft = NeighborHelper.getNeighbor(graph, node.row - increment, node.column - increment, boundaries);
 
         if(top) neighbors.push(top);
         if(topRight && includeCorners) neighbors.push(topRight);

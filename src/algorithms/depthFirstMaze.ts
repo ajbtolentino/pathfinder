@@ -2,17 +2,15 @@ import NeighborHelper from "../helpers/NeighborHelper";
 import INode, { NodeState, NodeType } from "../models/INode";
 
 export class DepthFirstMaze {
-    graph: INode[][];
+    grid: INode[][];
     totalIterations: number;
     nodeUpdated?: (row: number, column: number, type: NodeType) => Promise<void>;
 
     constructor(graph: INode[][]){
         this.totalIterations = 0;
-        this.graph = [...graph.map(rowNodes => {
+        this.grid = [...graph.map(rowNodes => {
             return [...rowNodes.map(node => {
-                const newNode: INode = {...node, state: "unvisited"};
-
-                if(newNode.type === "wall") newNode.type = "empty";
+                const newNode: INode = {...node, type: node.type === "empty" ? "wall" : node.type, state: "unvisited"};
 
                 return newNode;
             })];
@@ -22,38 +20,69 @@ export class DepthFirstMaze {
     run = async (row: number, column: number) => {
         this.totalIterations++;
 
-        const stack = [this.graph[row][column]];
+        // this.grid[row][column].state = "visited";
+
+        const stack = [this.grid[row][row]];
 
         while(stack.length) {
             const current = stack.pop();
 
             if(!current) continue;
-
-            await this.visit(current);
-
-            const neighbors = NeighborHelper.getNeighbors(this.graph, current);
-            const unvisitedNeighbors = neighbors.filter(_ => _.state === "unvisited" && _.type !== "end");
+            
+            const neighbors = NeighborHelper.getNeighbors(this.grid, current, true, false, 2);
+            const unvisitedNeighbors = neighbors.filter(_ => _.state === "unvisited");
 
             if(unvisitedNeighbors.length){
+                this.stack(stack, current);
+
+                current.type = "empty";
+                if(this.nodeUpdated) await this.nodeUpdated(current.row, current.column, "empty");
+
                 const randomIndex = Math.floor(Math.random() * unvisitedNeighbors.length);
                 const chosenNeighbor = unvisitedNeighbors[randomIndex];
                 
-                if(chosenNeighbor){
-                    chosenNeighbor.type = "wall";
-                    if(this.nodeUpdated) await this.nodeUpdated(chosenNeighbor.row, chosenNeighbor.column, "wall");
-                }
+                //Connect the neighbor
+                if(chosenNeighbor) {
+                    const connectorRowDiff = chosenNeighbor.row === current.row ? 0 : chosenNeighbor.row - current.row;
+                    const connectorColumnDiff = chosenNeighbor.column === current.column ? 0 : chosenNeighbor.column - current.column;
 
-                for(const n of unvisitedNeighbors) {
-                    if(n.type === "wall") continue;
+                    let connectorRow = 0;
+                    let connectorColumn = 0;
 
-                    await this.stack(stack, n);
+                    if(connectorRowDiff > 0) {
+                        connectorRow = 1;
+                    }
+
+                    if(connectorRowDiff < 0) {
+                        connectorRow = -1;
+                    }
+
+                    if(connectorColumnDiff > 0) {
+                        connectorColumn = 1;
+                    }
+
+                    if(connectorColumnDiff < 0) {
+                        connectorColumn = -1;
+                    }
+
+                    const path = this.grid[current.row + connectorRow][current.column + connectorColumn];
+
+                    if(path.type === "wall") {
+                        path.state = "visited";
+                        path.type = "empty";
+
+                        if(this.nodeUpdated) await this.nodeUpdated(path.row, path.column, "empty");
+                    }
+                    this.visit(chosenNeighbor);
+
+                    this.stack(stack, chosenNeighbor);
                 }
             }
 
             console.log("!");
         }
 
-        return this.graph;
+        return this.grid;
     };
 
     visit = async (node: INode) => {

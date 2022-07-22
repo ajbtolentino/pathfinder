@@ -149,7 +149,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
                 alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
                 alg.queued = (r,c) => nodeStateChanged(r,c, "queued");
                 alg.dequeued = nodePointed;
-                alg.pathUpdated = pathUpdated;
+                // alg.pathUpdated = pathUpdated;
             }
 
             await alg.search(startNode, endNode);
@@ -167,8 +167,10 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
                 const element = document.getElementById(`node-${node.row}-${node.column}`);
 
                 if(element){
-                    element.classList.remove("node-type-wall");
-                    element.classList.add(`node-type-empty`);
+                    element.classList.remove("node-type-start");
+                    element.classList.remove("node-type-end");
+                    element.classList.remove("node-type-empty");
+                    element.classList.add(`node-type-wall`);
                 }
             });
         });
@@ -252,7 +254,7 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
         
         for(let row = 0; row < grid.length; row++){
             for(let column = 0; column < grid[row].length; column++) {
-                if(grid[row][column].type !== props.traverse || grid[row][column].state === "visited") continue;
+                if(dfs.graph[row][column].type !== props.traverse || dfs.graph[row][column].state === "visited") continue;
                 
                 await dfs.runRecursive(row, column);
 
@@ -303,10 +305,10 @@ export const Grid: React.FC<IPathfinderGridProps> = (props) => {
                     <Button disabled={isRunning} onClick={runDfsMaze}>Create Maze</Button>
                 </ButtonGroup>
             </FormGroup>
-            {/* <FormGroup style={{display: "flex", flexDirection: "row", justifyContent: "start"}}>
-                {startNode && startNode.type !== "start" && <NodeStart size={props.nodeSize}/>}
-                {endNode && endNode.type !== "end" && <NodeEnd size={props.nodeSize}/> }
-            </FormGroup> */}
+            <FormGroup style={{display: "flex", flexDirection: "row", justifyContent: "start"}}>
+                <NodeStart size={props.nodeSize}/>
+                <NodeEnd size={props.nodeSize}/>
+            </FormGroup>
             <MuiGrid tabIndex={0} container overflow={"visible"} width={"auto"} 
                         onKeyDown={(e) => setIsShiftPressed(e.key === "Shift")}
                         onKeyUp={() => setIsShiftPressed(false)}
