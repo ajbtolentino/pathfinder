@@ -56,12 +56,18 @@ export default class Node {
         if(this.typeUpdated) this.typeUpdated(type);
     };
 
-    visit = () => {
+    visit = () : void => {
         this.setState(NodeState.Visited);
     };
 
-    pushIn = (array: Node[]) => {
+    pushIn = (array: Node[]) : void => {
         array.push(this);
+
+        this.setState(NodeState.Queued);
+    };
+
+    unshiftIn = (array: Node[]) : void => {
+        array.unshift(this);
 
         this.setState(NodeState.Queued);
     };

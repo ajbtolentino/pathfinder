@@ -38,10 +38,6 @@ export const GridComponent = memo((props: IPathfinderGridProps) => {
     const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
     const [isShiftPressed, setIsShiftPressed] = useState<boolean>(false);
 
-    useEffect(() => {
-        console.log("grid rerendered")
-    });
-
     const runAlgorithm = async () => {
         // reset();
         setIsRunning(true);
@@ -199,7 +195,7 @@ export const GridComponent = memo((props: IPathfinderGridProps) => {
             <FormGroup>
                 <ButtonGroup sx={{m: 1, justifyContent: "center"}}>
                     <Button disabled={isRunning} onClick={runAlgorithm}>Start</Button>
-                    <Button disabled={isRunning} onClick={() => props.grid.reset()}>Reset</Button>
+                    <Button disabled={isRunning} onClick={() => props.grid.resetAllNodes()}>Reset</Button>
                     <Button disabled={isRunning} onClick={handleClear}>Clear</Button>
                 </ButtonGroup>
             </FormGroup>

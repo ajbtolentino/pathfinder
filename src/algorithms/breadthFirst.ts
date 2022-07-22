@@ -5,20 +5,18 @@ import Node, { NodeState, NodeType } from "../models/Node";
 export class BreadthFirst {
     traverse: NodeType;
     grid: Grid;
-    totalIterations: number;
     boundaries: boolean;
     diagonalSearch: boolean;
 
     constructor(grid: Grid, traverse: NodeType, boundaries: boolean = false, diagonalSearch: boolean = false) {
         this.traverse = traverse;
-        this.totalIterations = 0;
         this.boundaries = boundaries;
         this.diagonalSearch = diagonalSearch;
         this.grid = grid;
     };
 
     scan = async (delay: number) => {
-        this.grid.reset();
+        this.grid.resetAllNodes();
 
         const startNode = this.grid.getStartNode();
 
@@ -32,7 +30,7 @@ export class BreadthFirst {
             if(!current) continue;
             if(current.getState() === NodeState.Visited) continue;
 
-            current.setState(NodeState.Visited);
+            current.visit();
 
             const neighbors = this.grid.getNeighbors(current, this.boundaries, this.diagonalSearch); 
 
@@ -40,18 +38,10 @@ export class BreadthFirst {
                 if(neighbor.getState() === NodeState.Visited || neighbor.getType() !== this.traverse) 
                     continue;
                 
-                this.queue(queue, neighbor);
-                queue.unshift(neighbor);
+                neighbor.unshiftIn(queue);
             }
 
-            await wait(delay);
-
-            this.totalIterations++;
+            if(delay) await wait(delay);
         }
     };
-
-    private queue = (stack: Node[], node: Node) => {
-        stack.unshift(node);
-        node.setState(NodeState.Queued);
-    }
 }

@@ -31,7 +31,7 @@ export default class Grid {
         this.nodes[0][0].setType(NodeType.Start);
     };
 
-    reset = () => {
+    resetAllNodes = () => {
         for(let x = 0; x < this.columns; x++) {
             for(let y = 0; y < this.rows; y++) {
                 this.nodes[x][y].reset();
@@ -39,7 +39,7 @@ export default class Grid {
         }
     };
 
-    updateAll = (type: NodeType) => {
+    updateAllNodes = (type: NodeType) => {
         for(let x = 0; x < this.columns; x++) {
             for(let y = 0; y < this.rows; y++) {
                 this.nodes[x][y].setType(type);

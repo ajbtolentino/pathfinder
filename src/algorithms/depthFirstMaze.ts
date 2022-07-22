@@ -10,12 +10,13 @@ export class DepthFirstMaze {
     };
 
     run = async (delay: number) => {
+        this.grid.resetAllNodes();
+        this.grid.updateAllNodes(NodeType.Wall);
+        this.grid.updateNode(1,1, NodeType.Start);
+
         const startNode = this.grid.getStartNode();
 
         if(!startNode) return;
-
-        this.grid.reset();
-        this.grid.updateAll(NodeType.Wall);
 
         const stack: Node[] = [startNode];
 
@@ -42,9 +43,9 @@ export class DepthFirstMaze {
                 }
             }
 
-            await wait(delay);
+            if(delay) await wait(delay);
         }
 
-        this.grid.reset();
+        this.grid.resetAllNodes();
     };
 } 

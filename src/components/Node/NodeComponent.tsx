@@ -18,10 +18,6 @@ export const NodeComponent = memo((props: INodeProps) => {
     const [currentState, setCurrentState] = useState<NodeState>(props.node.getState());
     const [currentType, setCurrentType] = useState<NodeType>(props.node.getType())
 
-    useEffect(() => {
-        console.log("node initialized");
-    });
-
     const [{ isOver, canDrop }, drop] = useDrop(() => ({
         accept: "node",
         drop: (item: {type: NodeType}) => props.onTypeDropped(item.type),

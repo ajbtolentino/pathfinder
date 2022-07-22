@@ -7,7 +7,7 @@ export const useGrid = () => {
     const [grid, setGrid] = useState<Grid>(new Grid(0, 0));
 
     const reset = () => {
-        grid.reset();
+        grid.resetAllNodes();
     };
 
     const create = (rows: number, columns: number) => {

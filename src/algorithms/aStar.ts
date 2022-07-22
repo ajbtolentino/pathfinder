@@ -19,7 +19,7 @@ export class AStar {
     }
 
     search = async (delay: number) : Promise<void> => {
-        this.grid.reset();
+        this.grid.resetAllNodes();
 
         const startNode = this.grid.getStartNode();
         const endNode = this.grid.getEndNode();
