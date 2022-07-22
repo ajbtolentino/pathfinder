@@ -1,43 +1,61 @@
-import { Box, Grid, Paper } from "@mui/material";
-import React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { Grid } from "@mui/material";
+import React, { memo } from "react";
+import { useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
-import INode, { NodeState, NodeType } from "../../models/INode";
+import Node, { NodeState, NodeType } from "../../models/Node";
 import { NodeEnd } from "./NodeEnd";
 import { NodeStart } from "./NodeStart";
 
 export interface INodeProps {
-    node: INode;
+    node: Node;
     size: number;
     isMouseDown: boolean;
     onToggleEmpty: () => void;
     onTypeDropped: (type: NodeType) => void;
 };
 
-export const Node = React.memo((props: INodeProps) => {
-    const [node, setNode] = useState<INode>({...props.node});
+export const NodeComponent = memo((props: INodeProps) => {
+    const [currentState, setCurrentState] = useState<NodeState>(props.node.getState());
+    const [currentType, setCurrentType] = useState<NodeType>(props.node.getType())
 
     useEffect(() => {
-        setNode({...props.node});
-    }, [props.node]);
+        console.log("node initialized");
+    });
 
     const [{ isOver, canDrop }, drop] = useDrop(() => ({
         accept: "node",
-        drop: (item: {type: string}) => typeDropped(item.type),
-        canDrop: () => props.node.type === "empty",
+        drop: (item: {type: NodeType}) => props.onTypeDropped(item.type),
+        canDrop: () => currentType === NodeType.Empty,
         collect: monitor => ({
           isOver: !!monitor.isOver(),
           canDrop: !!monitor.canDrop()
         }),
       }), [props]);
 
-    const typeDropped = (type: string) => {
-        props.onTypeDropped(type === "start" ? "start" : "end")
+    props.node.stateUpdated = (state: NodeState) => {
+        setCurrentState(state);
     };
 
-    const onMouseEnter = () => {
-        if(props.isMouseDown && (props.node.type === "empty" || props.node.type === "wall")) props.onToggleEmpty();
+    props.node.typeUpdated = (type: NodeType) => {
+        setCurrentType(type);
     };
+
+    useEffect(() => {
+        setCurrentState(props.node.getState());
+        setCurrentType(props.node.getType());
+    }, [props.node]);
+
+    const onMouseEnter = () => {
+        if(props.isMouseDown && (currentType === NodeType.Empty || currentType === NodeType.Wall)) props.onToggleEmpty();
+    };
+
+    const getNodeStateClass = () => {
+        return `node-state-${currentState}`;
+    }
+
+    const getNodeTypeClass = () => {
+        return `node-type-${currentType}`;
+    }
 
     return (
         <div ref={drop} style={{
@@ -46,32 +64,18 @@ export const Node = React.memo((props: INodeProps) => {
             outline: "thin solid hsl(50, 100%, 0%)"
           }}>
             <Grid item
-                id={`node-${node.row}-${node.column}`}
-                className={`node node-type-${node.type}`}
+                id={`node-${props.node.x}-${props.node.y}`}
+                className={`node ${getNodeTypeClass()} ${getNodeStateClass()}`}
                 height={props.size}     
                 width={props.size}          
                 onClick={() => props.onToggleEmpty()} 
                 onMouseEnter={onMouseEnter} >
                 {
-                    node.type === "start" && <NodeStart size={props.size}/>
+                    currentType === NodeType.Start && <NodeStart size={props.size}/>
                 }
                 {
-                    node.type === "end" && <NodeEnd size={props.size} />
+                    currentType === NodeType.Goal && <NodeEnd size={props.size} />
                 }
-                {!isOver && canDrop && (
-                    <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        height: '100%',
-                        width: '100%',
-                        zIndex: 1,
-                        opacity: 0.5,
-                        backgroundColor: 'yellow',
-                    }}
-                    />
-                )}
                 {isOver && canDrop && (
                     <div
                     style={{
@@ -105,4 +109,4 @@ export const Node = React.memo((props: INodeProps) => {
     )
 });
 
-export default Node;
+export default NodeComponent;

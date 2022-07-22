@@ -1,23 +1,30 @@
 import { Checkbox, Drawer, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { Box } from '@mui/system';
 import './App.css';
-import Grid, { GridAlgorithm } from './components/Grid/Grid';
-import React from 'react';
-import { NodeType } from './models/INode';
+import GridComponent, { GridAlgorithm } from './components/Grid/GridComponent';
+import React, { useEffect } from 'react';
+import { NodeType } from './models/Node';
+import { useGrid } from './hooks/useGrid';
 
 const drawerWidth = 260;
 
 const App = () => {
   const [algorithm, setAlgorithm] = React.useState<GridAlgorithm>("astar");
-  const [rows, setRows] = React.useState<number>(31);
+  const [rows, setRows] = React.useState<number>(29);
   const [columns, setColumns] = React.useState<number>(55);
   const [nodeSize, setNodeSize] = React.useState<number>(20);
 
+  const { grid, create } = useGrid();
+
   const [delay, setDelay] = React.useState<number>(1);
-  const [traverse, setTraverse] = React.useState<NodeType>("empty");
+  const [traverse, setTraverse] = React.useState<NodeType>(NodeType.Empty);
   const [boundaries, setBoundaries] = React.useState<boolean>(true);
   const [diagonalSearch, setDiagonalSearch] = React.useState<boolean>(true);
   const [animate, setAnimate] = React.useState<boolean>(true);
+
+  useEffect(() => {
+    create(rows, columns);
+  }, [rows, columns]);
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -44,8 +51,8 @@ const App = () => {
             <FormControl variant="outlined" size='small' sx={{ m: 1 }}>
               <InputLabel>Traverse</InputLabel>
               <Select label="Traverse" value={traverse} onChange={e => setTraverse(e.target.value as NodeType)}>
-                <MenuItem value="empty">Empty</MenuItem>
-                <MenuItem value="wall">Wall</MenuItem>
+                <MenuItem value={NodeType.Empty}>Empty</MenuItem>
+                <MenuItem value={NodeType.Wall}>Wall</MenuItem>
               </Select>
             </FormControl>
             <FormGroup sx={{m: 1}} row>
@@ -73,7 +80,8 @@ const App = () => {
           component={"main"}
           sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}          
         >
-        <Grid 
+        <GridComponent 
+          grid={grid}
           rows={rows} 
           columns={columns} 
           nodeSize={nodeSize}

@@ -1,10 +1,11 @@
 import SportsScoreIcon from '@mui/icons-material/SportsScore';
 import { useDrag } from 'react-dnd';
+import { NodeType } from '../../models/Node';
 
 export const NodeEnd = (props: {size: number}) => {
     const [{isDragging}, drag] = useDrag(() => ({
         type: "node",
-        item: {type: "end"},
+        item: {type: NodeType.Goal},
         collect: monitor => ({
           isDragging: !!monitor.isDragging(),
         }),

@@ -1,116 +1,95 @@
 import { wait } from "@testing-library/user-event/dist/utils";
 import NeighborHelper from "../helpers/NeighborHelper";
-import INode, { NodeState, NodeType } from "../models/INode";
+import Grid from "../models/Grid";
+import Node, { NodeState, NodeType } from "../models/Node";
 
 export class AStar {
-    graph: INode[][];
+    grid: Grid;
     traverse: NodeType;
-    totalIterations: number;
-    boundaries: boolean;
-    diagonalSearch: boolean;
-    path: INode[];
-    visited?: (row: number, column: number) => Promise<void>;
-    dequeued?: (row: number, column: number) => Promise<void>;
-    queued?: (row: number, column: number) => Promise<void>;
-    pathUpdated?: (path: INode[]) => Promise<void>;
+    hasBorders: boolean;
+    includeDiagonal: boolean;
+    path: Node[];
 
-    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, diagonalSearch: boolean) {
-        this.graph = [...graph.map(rowNodes => {
-            return [...rowNodes.map(node => {
-                const aStarNode: INode = {
-                    ...node,
-                    state: "unvisited"
-                };
-
-                return aStarNode;
-            })];
-        })];
+    constructor(grid: Grid, traverse: NodeType, boundaries: boolean, diagonalSearch: boolean) {
+        this.grid = grid;
         this.traverse = traverse;
-        this.totalIterations = 0;
-        this.boundaries = boundaries;
-        this.diagonalSearch = diagonalSearch;
+        this.hasBorders = boundaries;
+        this.includeDiagonal = diagonalSearch;
         this.path = [];
     }
 
-    search = async (startNode: INode, endNode: INode) => {
-        const first = this.graph[startNode.row][startNode.column];
-        first.gScore = 0;
-        first.hScore = Math.abs(first.row - endNode.row) + Math.abs(first.column - endNode.column); 
-        first.fScore = first.gScore + first.hScore;
+    search = async (delay: number) : Promise<void> => {
+        this.grid.reset();
 
-        const queue = [first];
+        const startNode = this.grid.getStartNode();
+        const endNode = this.grid.getEndNode();
+
+        if(!startNode || !endNode) return;
+
+        startNode.gScore = 0;
+        startNode.hScore = Math.abs(startNode.x - endNode.x) + Math.abs(startNode.y - endNode.y); 
+        startNode.fScore = startNode.gScore + startNode.hScore;
+
+        const queue = [startNode];
 
         while(queue.length) {
             queue.sort((a,b) => a.fScore - b.fScore);
 
-            const curretNode = await this.dequeue(queue);
+            const curretNode = queue.shift();
 
             if(!curretNode) continue;
 
-            this.path = [];
-            await this.drawPath(curretNode);
+            if(curretNode.getType() === NodeType.Goal) {
+                this.drawPath(curretNode);
+                break;
+            }
 
-            if(curretNode.type === "end") break;
+            curretNode.visit();
 
-            await this.visit(curretNode);
-            await this.calculateScore(queue, curretNode, endNode);
+            this.calculateScore(queue, curretNode, endNode);
+
+            if(delay) await wait(delay);
         }
-
-        return this.graph;
     };
 
-    calculateScore = async (queue: INode[], currentNode: INode, endNode: INode) => {
-        const neighbors = NeighborHelper.getNeighbors(this.graph, currentNode, this.boundaries, this.diagonalSearch); 
+    calculateScore = (queue: Node[], currentNode: Node, endNode: Node) => {
+        const neighbors = this.grid.getNeighbors(currentNode, this.hasBorders, this.includeDiagonal);
 
         for(let neighbor of neighbors) {
-            const isValidType = neighbor.type === this.traverse || neighbor.type === "end" || neighbor.type === "start";
+            const isValidType = neighbor.getType() === this.traverse || 
+                                neighbor.getType() === NodeType.Goal || 
+                                neighbor.getType() === NodeType.Start;
 
             if(!isValidType) continue;
 
-            const tentativeGScore = currentNode.gScore + ((neighbor.row - currentNode.row === 0 || neighbor.column - currentNode.column === 0) ? 1 : Math.SQRT2);
+            const tentativeGScore = currentNode.gScore + ((neighbor.x - currentNode.x === 0 || neighbor.y - currentNode.y === 0) ? 1 : Math.SQRT2);
             // const tentativeGScore = currentNode.gScore + 1;
 
-            if(neighbor.state === "unvisited" || tentativeGScore < neighbor.gScore) {
+            if(neighbor.getState() === NodeState.Unvisited || tentativeGScore < neighbor.gScore) {
                 neighbor.gScore = tentativeGScore;
-                neighbor.hScore = this.diagonalSearch ? Math.sqrt(Math.pow(neighbor.row - endNode.row, 2) + Math.pow(neighbor.column - endNode.column, 2)) : Math.abs(neighbor.row - endNode.row) + Math.abs(neighbor.column - endNode.column); 
+                neighbor.hScore = this.includeDiagonal ? 
+                                    Math.sqrt(Math.pow(neighbor.x - endNode.x, 2) + Math.pow(neighbor.y - endNode.y, 2)) : 
+                                    Math.abs(neighbor.x - endNode.x) + Math.abs(neighbor.y - endNode.y); 
                 neighbor.fScore = neighbor.gScore + neighbor.hScore;
                 neighbor.previous = currentNode;
             }
 
-            if(neighbor.state === "unvisited") 
-                await this.queue(queue, neighbor);
+            if(neighbor.getState() === NodeState.Unvisited) 
+                neighbor.pushIn(queue);
         }
     }
 
-    visit = async (node: INode) => {
-        node.state = "visited";
-
-        if(this.visited) await this.visited(node.row, node.column);
-    }
-
-    queue = async (queue: INode[], node: INode) => {
-        node.state = "queued";
-
+    queue = async (queue: Node[], node: Node) => {
         queue.push(node);
 
-        if(this.queued) await this.queued(node.row, node.column);
-    }
+        node.setState(NodeState.Queued);
+    };
 
-    dequeue = async (queue: INode[]) => {
-        const curretNode = queue.shift();
-
-        if(curretNode && this.dequeued) await this.dequeued(curretNode.row, curretNode.column);
-
-        return curretNode;
-    }
-
-    drawPath = async (node: INode) => {
+    drawPath = (node: Node) => {
         if(!node) return;
 
         this.path.push(node);
 
         if(node.previous) this.drawPath(node.previous);
-
-        if(this.pathUpdated) await this.pathUpdated([...this.path]);
-    }
+    };
 }

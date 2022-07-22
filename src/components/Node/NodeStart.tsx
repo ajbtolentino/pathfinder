@@ -1,10 +1,11 @@
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import { useDrag } from 'react-dnd';
+import { NodeType } from '../../models/Node';
 
 export const NodeStart = (props: {size: number}) => {
     const [{isDragging}, drag] = useDrag(() => ({
         type: "node",
-        item: {type: "start"},
+        item: {type: NodeType.Start},
         collect: monitor => ({
           isDragging: !!monitor.isDragging(),
         }),

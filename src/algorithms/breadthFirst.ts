@@ -1,77 +1,57 @@
 import { wait } from "@testing-library/user-event/dist/utils";
-import NeighborHelper from "../helpers/NeighborHelper";
-import INode, { NodeState, NodeType } from "../models/INode";
+import Grid from "../models/Grid";
+import Node, { NodeState, NodeType } from "../models/Node";
 
 export class BreadthFirst {
     traverse: NodeType;
-    graph: INode[][];
+    grid: Grid;
     totalIterations: number;
     boundaries: boolean;
     diagonalSearch: boolean;
-    visited?: (row: number, column: number) => Promise<void>;
-    dequeued?: (row: number, column: number) => Promise<void>;
-    queued?: (row: number, column: number) => Promise<void>;
 
-    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean = false, diagonalSearch: boolean = false) {
+    constructor(grid: Grid, traverse: NodeType, boundaries: boolean = false, diagonalSearch: boolean = false) {
         this.traverse = traverse;
         this.totalIterations = 0;
         this.boundaries = boundaries;
         this.diagonalSearch = diagonalSearch;
-        this.graph = [...graph.map(rowNodes => {
-            return [...rowNodes.map(node => {
-                const newNode: INode = {...node, state: "unvisited"};
-                return newNode;
-            })];
-        })];
-    }
+        this.grid = grid;
+    };
 
-    scan = async (startNode: INode) => {
-        const queue = [this.graph[startNode.row][startNode.column]];
+    scan = async (delay: number) => {
+        this.grid.reset();
+
+        const startNode = this.grid.getStartNode();
+
+        if(!startNode) return;
+        
+        const queue = [this.grid.nodes[startNode.x][startNode.y]];
 
         while(queue.length > 0) {
-            const current = await this.dequeue(queue);
+            const current = queue.pop();
 
             if(!current) continue;
-            if(current.state === "visited") continue;
+            if(current.getState() === NodeState.Visited) continue;
 
-            await this.visit(current);
+            current.setState(NodeState.Visited);
 
-            const neighbors = NeighborHelper.getNeighbors(this.graph, current, this.boundaries, this.diagonalSearch); 
+            const neighbors = this.grid.getNeighbors(current, this.boundaries, this.diagonalSearch); 
 
             for(let neighbor of neighbors) {
-                if(neighbor.state === "queued" || 
-                  neighbor.state === "visited" || 
-                  neighbor.type !== this.traverse) continue;
+                if(neighbor.getState() === NodeState.Visited || neighbor.getType() !== this.traverse) 
+                    continue;
                 
-                await this.queue(queue, neighbor)
+                this.queue(queue, neighbor);
+                queue.unshift(neighbor);
             }
+
+            await wait(delay);
 
             this.totalIterations++;
         }
-
-        return this.graph;
     };
 
-    dequeue = async (queue: INode[]) => {
-        const current = queue.pop();
-
-        if(current && this.dequeued) 
-            await this.dequeued(current.row, current.column);
-
-        return current;
-    }
-
-    visit = async (node: INode) => {
-        node.state = "visited";
-
-        if(this.visited) 
-            await this.visited(node.row, node.column);
-    }
-
-    queue = async (stack: INode[], node: INode) => {
+    private queue = (stack: Node[], node: Node) => {
         stack.unshift(node);
-
-        if(this.queued) 
-            await this.queued(node.row, node.column);
+        node.setState(NodeState.Queued);
     }
 }

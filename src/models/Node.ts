@@ -1,18 +1,68 @@
+export enum NodeType {
+    Wall = "wall",
+    Empty = "empty",
+    Start = "start",
+    Goal = "goal"
+};
+
+export enum NodeState {
+    Unvisited = "unvisited",
+    Visited = "visited",
+    Queued = "queued"
+};
+
 export default class Node {
     x: number;
     y: number;
-    stateUpdated?: () => void;
+    gScore: number;
+    hScore: number;
+    fScore: number;
+    previous: Node | undefined;
+
+    stateUpdated?: (state: NodeState) => void;
+    typeUpdated?: (type: NodeType) => void;
 
     constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
+        this.gScore = Infinity;
+        this.hScore = Infinity;
+        this.fScore = Infinity;
+        this.type = NodeType.Empty;
+        this.state = NodeState.Unvisited;
+    };
+
+    reset = () : void => {
+        this.gScore = Infinity;
+        this.hScore = Infinity;
+        this.fScore = Infinity;
+        this.previous = undefined;
+        this.setState(NodeState.Unvisited);
     }
 
-    getState = () => {
+    private state: NodeState;
+    getState = () : NodeState => this.state;
+    setState = (state: NodeState) : void => {
+        this.state = state;
         
-    }
+        if(this.stateUpdated) this.stateUpdated(state);
+    };
 
-    setState = () => {
-        if(this.stateUpdated) this.stateUpdated();
-    }
+    private type: NodeType;
+    getType = () : NodeType => this.type;
+    setType = (type: NodeType) : void => {
+        this.type = type;
+
+        if(this.typeUpdated) this.typeUpdated(type);
+    };
+
+    visit = () => {
+        this.setState(NodeState.Visited);
+    };
+
+    pushIn = (array: Node[]) => {
+        array.push(this);
+
+        this.setState(NodeState.Queued);
+    };
 }
