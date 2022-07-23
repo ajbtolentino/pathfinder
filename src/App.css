@@ -1,56 +1,74 @@
 @keyframes stretch {
   0% {
-    outline: "1px solid black";
-    transform: scale(.2);
-    border-radius: 100%;
-  }
-  50% {
-    transform: scale(1.05);
+    transform: scale(0.5);
+    outline: none;
   }
   100% {
     transform: scale(1);
-    border-radius: 0%;
   }
 }
 
-.node-current {
-  background-color: violet !important;
+@keyframes path {
+  0% {
+    transform: scale(.5);
+    background-color: #10379e;
+  }
+  100% {
+    transform: scale(1);
+    background-color: aquamarine;
+  }
+}
+
+@keyframes visited {
+  from {
+    background-color: hotpink;
+  }
+  to {
+    background-color: #10379e;
+  }
+}
+
+.node {
+  outline: thin solid black;
+  transition: all 100ms;
+  animation-duration: 100ms;
+  animation-timing-function: ease;
 }
 
 .node-state-queued,
 .node-state-stacked {
   background-color: lightpink;
+  outline: none;
   animation-name: stretch;
-  animation-duration: 1.5s; 
+  animation-fill-mode: forwards;
 }
 
 .node-state-visited {
-  background: #10379e !important;
-  animation-name: stretch;
-  animation-duration: 1.5s; 
+  outline: none;
+  animation-name: stretch, visited;
+  animation-fill-mode: forwards;
 }
 
 .node-type-start {
   display: flex;
   color: green;
-  background-color: white !important;
 }
 
 .node-type-end {
   display: flex;
   color: brown !important;
-  background-color: white !important;
 }
 
 .node-type-wall {
-  background-color: black
+  background-color: black;
+  animation-name: enlarge;
+  outline: none;
 }
 
 .node-path {
-  background-color: aquamarine !important;
-  transition: all 1s;
-}
-
-div:has(.node-path) {
-  outline: none !important;
+  background-color: #10379e;
+  animation-name: path;
+  animation-fill-mode: forwards;
+  animation-delay: calc(10ms * var(--index)) !important;
+  animation-duration: 200ms;
 }

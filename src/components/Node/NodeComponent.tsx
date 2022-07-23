@@ -1,6 +1,5 @@
 import { Grid } from "@mui/material";
-import React, { memo } from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
 import Node, { NodeState, NodeType } from "../../models/Node";
 import { NodeEnd } from "./NodeEnd";
@@ -14,9 +13,14 @@ export interface INodeProps {
     onTypeDropped: (type: NodeType) => void;
 };
 
-export const NodeComponent = memo((props: INodeProps) => {
-    const [currentState, setCurrentState] = useState<NodeState>(props.node.getState());
-    const [currentType, setCurrentType] = useState<NodeType>(props.node.getType())
+export const NodeComponent = (props: INodeProps) => {
+    const [currentState, setCurrentState] = React.useState<NodeState>(props.node.getState());
+    const [currentType, setCurrentType] = React.useState<NodeType>(NodeType.Empty);
+
+    React.useEffect(() => {
+        setCurrentState(props.node.getState());
+        setCurrentType(props.node.getType());
+    }, [props.node]);
 
     const [{ isOver, canDrop }, drop] = useDrop(() => ({
         accept: "node",
@@ -26,7 +30,7 @@ export const NodeComponent = memo((props: INodeProps) => {
           isOver: !!monitor.isOver(),
           canDrop: !!monitor.canDrop()
         }),
-      }), [props]);
+      }), [currentType]);
 
     props.node.stateUpdated = (state: NodeState) => {
         setCurrentState(state);
@@ -36,28 +40,42 @@ export const NodeComponent = memo((props: INodeProps) => {
         setCurrentType(type);
     };
 
-    useEffect(() => {
-        setCurrentState(props.node.getState());
-        setCurrentType(props.node.getType());
-    }, [props.node]);
-
     const onMouseEnter = () => {
-        if(props.isMouseDown && (currentType === NodeType.Empty || currentType === NodeType.Wall)) props.onToggleEmpty();
+        if(props.isMouseDown && (currentType === NodeType.Empty || currentType === NodeType.Wall)) 
+            props.onToggleEmpty();
     };
 
     const getNodeStateClass = () => {
         return `node-state-${currentState}`;
-    }
+    };
 
     const getNodeTypeClass = () => {
         return `node-type-${currentType}`;
-    }
+    };
+
+    const renderOverlay = () => {
+        if(!isOver) return;
+
+        const backgroundColor = canDrop ? "green" : "red";
+
+        return (
+            <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    height: '100%',
+                    width: '100%',
+                    zIndex: 1,
+                    opacity: 0.5,
+                    backgroundColor: backgroundColor,
+                }}
+            />
+        );
+    };
 
     return (
         <div ref={drop} style={{
-            backgroundColor: "white",
-            position: "relative",
-            outline: "thin solid hsl(50, 100%, 0%)"
+            position: "relative"
           }}>
             <Grid item
                 id={`node-${props.node.x}-${props.node.y}`}
@@ -72,37 +90,10 @@ export const NodeComponent = memo((props: INodeProps) => {
                 {
                     currentType === NodeType.Goal && <NodeEnd size={props.size} />
                 }
-                {isOver && canDrop && (
-                    <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        height: '100%',
-                        width: '100%',
-                        zIndex: 1,
-                        opacity: 0.5,
-                        backgroundColor: 'green',
-                    }}
-                    />
-                )}
-                {isOver && !canDrop && (
-                    <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        height: '100%',
-                        width: '100%',
-                        zIndex: 1,
-                        opacity: 0.5,
-                        backgroundColor: 'red',
-                    }}
-                    />
-                )}
+                {renderOverlay()}
             </Grid>
         </div>
-    )
-});
+    );
+};
 
 export default NodeComponent;

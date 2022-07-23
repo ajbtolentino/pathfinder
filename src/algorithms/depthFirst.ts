@@ -1,106 +1,85 @@
 import { wait } from "../helpers/WaitHelper";
 import NeighborHelper from "../helpers/NeighborHelper";
-import INode, { NodeState, NodeType } from "../models/INode";
+import Grid from "../models/Grid";
+import Node, { NodeState, NodeType } from "../models/Node";
 
 export class DepthFirst {
-    graph: INode[][];
+    grid: Grid;
     traverse: NodeType;
-    totalIterations: number;
-    boundaries: boolean;
+    hasBorders: boolean;
     diagonalSearch: boolean;
     pointed?: (row: number, column: number) => Promise<void>;
     visited?: (row: number, column: number) => Promise<void>;
     stacked?: (row: number, column: number) => Promise<void>;
 
-    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean = false, diagonalSearch: boolean = false){
+    constructor(grid: Grid, traverse: NodeType, boundaries: boolean = false, diagonalSearch: boolean = false){
         this.traverse = traverse;
-        this.totalIterations = 0;
-        this.boundaries = boundaries;
+        this.hasBorders = boundaries;
         this.diagonalSearch = diagonalSearch;
-        this.graph = [...graph.map(rowNodes => {
-            return [...rowNodes.map(node => {
-                const newNode: INode = {...node, state: "unvisited"};
-                return newNode;
-            })];
-        })];
+        this.grid = grid;
     };
     
-    runStack = async (row: number, column: number) => {
-        this.totalIterations = 0;
+    runStack = async (delay: number) => {
+        const startNode = this.grid.getStartNode();
 
-        const stack: INode[] = [this.graph[row][column]];
+        if(!startNode) return;
+
+        const stack: Node[] = [];
+
+        startNode.unshiftIn(stack);
 
         while(stack.length > 0) {
-            const current = await this.shift(stack);
+            const current = stack.shift();
 
             if(!current) continue;
-            if(current.state === "visited") continue;
+            if(current.getState() === NodeState.Visited) continue;
 
-            await this.visit(current);
+            current.visit();
 
-            const neighbors = NeighborHelper.getNeighbors(this.graph, current, this.boundaries); 
+            const neighbors = this.grid.getNeighbors(current, this.hasBorders, this.diagonalSearch); 
 
             for(let neighbor of neighbors) {
-                if(neighbor.state === "visited" || neighbor.type !== this.traverse) 
+                if(neighbor.getState() === NodeState.Visited || neighbor.getType() !== this.traverse) 
                     continue;
                 
-                await this.stack(stack, neighbor);
+                neighbor.unshiftIn(stack);
             }
 
-            this.totalIterations++;
+            if(delay) await wait(delay);
         }
 
-        return this.graph;
+        return this.grid;
     };
 
-    runRecursive = async (row: number, column: number) => {
-        const current = this.graph[row][column];
+    runRecursive = async (delay: number) => {
+        this.grid.resetAllNodes();
+
+        const startNode = this.grid.getStartNode();
+
+        if(!startNode) return;
+
+        await this.recursive(startNode, delay);
+    };
+
+    private recursive = async (node: Node, delay: number) => {
+        const current = this.grid.nodes[node.x][node.y];
 
         if(!current) return;
-        
-        if(this.pointed)
-            await this.pointed(current.row, current.column);
 
-        if(current.state === "visited") return;
+        if(current.getState() === NodeState.Visited) return;
 
-        await this.visit(current);
+        current.visit();
 
-        const neighbors = NeighborHelper.getNeighbors(this.graph, current, this.boundaries, this.diagonalSearch); 
+        if(delay) await wait(delay);
+
+        const neighbors = this.grid.getNeighbors(current, this.hasBorders, this.diagonalSearch);
 
         for(let neighbor of neighbors) {
-            if(neighbor.state === "visited" || neighbor.type !== this.traverse) continue;
+            if(neighbor.getState() === NodeState.Visited || neighbor.getType() !== this.traverse) continue;
 
-            await this.runRecursive(neighbor.row, neighbor.column);
+            await this.recursive(neighbor, delay);
         }
 
-        this.totalIterations++;
-
-        if(current.row === 0 && current.column === 0) 
-            return this.graph;
-    };
-
-    shift = async (stack: INode[]): Promise<INode | undefined | null> => {
-        const current = stack.shift();
-
-        if(!current) return null;
-
-        if(this.pointed)
-            await this.pointed(current.row, current.column);
-
-        return current;
-    }
-
-    visit = async (node: INode) => {
-        node.state = "visited";
-
-        if(this.visited)
-            await this.visited(node.row, node.column);
-    }
-
-    stack = async (stack: INode[], node: INode) => {
-        stack.unshift(node);
-
-        if(this.stacked) 
-            await this.stacked(node.row, node.column);
+        if(!current.x && !current.y) return;
     }
 } 

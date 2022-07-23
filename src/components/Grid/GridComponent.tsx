@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, FormGroup, Grid as MuiGrid } from "@mui/material";
-import React, { useEffect, useState, memo } from "react";
+import React, { useEffect, useState, memo, useMemo } from "react";
 import {NodeComponent as NodeComponent} from "../Node/NodeComponent";
 import { useGrid } from "../../hooks/useGrid";
 import { DepthFirst } from "../../algorithms/depthFirst";
@@ -10,7 +10,6 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { wait } from "@testing-library/user-event/dist/utils";
 import { DepthFirstMaze } from "../../algorithms/depthFirstMaze";
-import { clear } from "console";
 import { NodeStart } from "../Node/NodeStart";
 import { NodeEnd } from "../Node/NodeEnd";
 import Node, { NodeState, NodeType } from "../../models/Node";
@@ -33,13 +32,17 @@ export interface IPathfinderGridProps {
     reset?: () => void;
 }
 
-export const GridComponent = memo((props: IPathfinderGridProps) => {
+export const GridComponent = (props: IPathfinderGridProps) => {
+    const [delay, setDelay] = React.useState<number>(props.delay);
     const [isRunning, setIsRunning] = useState<boolean>(false);
     const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
     const [isShiftPressed, setIsShiftPressed] = useState<boolean>(false);
 
+    useEffect(() => {
+        setDelay(props.delay);
+    }, [props.delay]);
+
     const runAlgorithm = async () => {
-        // reset();
         setIsRunning(true);
 
         switch(props.algorithm) {
@@ -77,32 +80,21 @@ export const GridComponent = memo((props: IPathfinderGridProps) => {
     };
 
     const runDfsStack = async () => {
-        // if(startNode){
-        //     const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries);
-            
-        //     if(props.animate){
-        //         alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-        //     }
+        const alg: DepthFirst = new DepthFirst(props.grid, props.traverse, props.boundaries);
 
-        //     await alg.runStack(startNode.row, startNode.column);
-        // }
+        await alg.runStack(delay);
     };
 
     const runDfsRecursive = async () => {
-        // if(startNode){
-        //     const alg: DepthFirst = new DepthFirst(grid, props.traverse, props.boundaries, props.diagonalSearch);
-        //     if(props.animate){
-        //         alg.visited = (r,c) => nodeStateChanged(r,c, "visited");
-        //     }
+        const alg: DepthFirst = new DepthFirst(props.grid, props.traverse, props.boundaries);
 
-        //     await alg.runRecursive(startNode.row, startNode.column);
-        // }
+        await alg.runRecursive(delay);
     };
 
     const runBfs = async () => {
         const alg: BreadthFirst = new BreadthFirst(props.grid, props.traverse, props.boundaries, props.diagonalSearch);
 
-        await alg.scan(props.delay);
+        await alg.scan(delay);
     };
 
     const runDijkstra = async () => {
@@ -114,7 +106,7 @@ export const GridComponent = memo((props: IPathfinderGridProps) => {
     const runAStar = async () => {
         const alg: AStar = new AStar(props.grid, props.traverse, props.boundaries, props.diagonalSearch);
 
-        await alg.search(props.delay);
+        await alg.search(delay);
 
         pathUpdated(alg.path);
     };
@@ -124,7 +116,7 @@ export const GridComponent = memo((props: IPathfinderGridProps) => {
 
         const alg: DepthFirstMaze = new DepthFirstMaze(props.grid);
 
-        await alg.run(props.delay);
+        await alg.run(delay);
 
         setIsRunning(false);
     }
@@ -149,18 +141,12 @@ export const GridComponent = memo((props: IPathfinderGridProps) => {
     const pathUpdated = (nodes: Node[]) : void => {
         const ids = nodes.map(n => `node-${n.x}-${n.y}`);
 
-        const collection =  document.getElementsByClassName("node-path");
-
-        for (let i = 0; i < collection.length; i++) {
-            const element = collection[i];
-
-            if(element && !ids.includes(element.id)) element.classList.remove("node-path");
-        }
-
-        ids.forEach(id => {
+        ids.forEach((id, i) => {
             const element = document.getElementById(id);
-            if(element && !element.classList.contains("node-path"))
-                element.classList.add("node-path")
+            if(element && !element.classList.contains("node-path")){
+                element.classList.add("node-path");
+                element.style.setProperty("--index", (ids.length-i).toString());
+            }
         });
     };
 
@@ -225,6 +211,6 @@ export const GridComponent = memo((props: IPathfinderGridProps) => {
         </DndProvider>
     </>
     );
-});
+};
 
-export default GridComponent;
+export default memo(GridComponent);
