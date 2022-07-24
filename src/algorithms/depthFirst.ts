@@ -8,15 +8,14 @@ export class DepthFirst {
     traverse: NodeType;
     hasBorders: boolean;
     diagonalSearch: boolean;
-    pointed?: (row: number, column: number) => Promise<void>;
-    visited?: (row: number, column: number) => Promise<void>;
-    stacked?: (row: number, column: number) => Promise<void>;
+    totalIterations: number;
 
     constructor(grid: Grid, traverse: NodeType, boundaries: boolean = false, diagonalSearch: boolean = false){
         this.traverse = traverse;
         this.hasBorders = boundaries;
         this.diagonalSearch = diagonalSearch;
         this.grid = grid;
+        this.totalIterations = 0;
     };
     
     runStack = async (delay: number) => {
@@ -51,14 +50,16 @@ export class DepthFirst {
         return this.grid;
     };
 
-    runRecursive = async (delay: number) => {
-        this.grid.resetAllNodes();
+    runRecursive = async (delay: number, startNode: Node | undefined = undefined) => {
+        if(!startNode)
+            startNode = this.grid.getStartNode();
 
-        const startNode = this.grid.getStartNode();
-
-        if(!startNode) return;
+        if(!startNode) 
+            return;
 
         await this.recursive(startNode, delay);
+
+        this.totalIterations++;
     };
 
     private recursive = async (node: Node, delay: number) => {

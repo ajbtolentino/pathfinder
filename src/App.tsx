@@ -55,10 +55,15 @@ const App = () => {
                 <MenuItem value={NodeType.Wall}>Wall</MenuItem>
               </Select>
             </FormControl>
-            <FormGroup sx={{m: 1}} row>
-              <FormControlLabel control={<Checkbox checked={animate} onChange={e => setAnimate(e.currentTarget.checked)}/>} label="Animate" />
-              <TextField type={"number"} label="Delay (ms)" size="small" sx={{width: 130}} value={delay} onChange={e => setDelay(+e.target.value)}/>
-            </FormGroup>
+            <FormControl variant="outlined" size='small' sx={{ m: 1 }}>
+              <InputLabel>Speed</InputLabel>
+              <Select label="Speed" value={delay} onChange={e => setDelay(+e.target.value)}>
+                <MenuItem value={0}>Instant</MenuItem>
+                <MenuItem value={1}>Fast</MenuItem>
+                <MenuItem value={25}>Normal</MenuItem>
+                <MenuItem value={100}>Slow</MenuItem>
+              </Select>
+            </FormControl>
             <FormGroup sx={{m: 1}} row>
               <FormControlLabel control={<Checkbox checked={boundaries} onChange={e => setBoundaries(e.currentTarget.checked)}/>} label="Boundaries" />
               <FormControlLabel control={<Checkbox checked={diagonalSearch} onChange={e => setDiagonalSearch(e.currentTarget.checked)}/>} label="Diagonal Search" />

@@ -82,6 +82,8 @@ const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridPro
     };
 
     const runDfsRecursive = async () => {
+        props.grid.resetAllNodes();
+        
         const alg: DepthFirst = new DepthFirst(props.grid, props.traverse, props.boundaries);
 
         await alg.runRecursive(delay);
@@ -120,18 +122,26 @@ const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridPro
     }
 
     const runCountGroup = async () => {
-        // const dfs = new DepthFirst(grid, props.traverse, props.boundaries);
-        // let count = 0;
+        const dfs = new DepthFirst(props.grid, props.traverse, props.boundaries);
+        let count = 0;
 
-        // for(let row = 0; row < grid.length; row++){
-        //     for(let column = 0; column < grid[row].length; column++) {
-        //         if(dfs.graph[row][column].type !== props.traverse || dfs.graph[row][column].state === "visited") continue;
+        props.grid.resetAllNodes();
+
+        for(let row = 0; row < props.grid.rows; row++){
+            for(let column = 0; column < props.grid.columns; column++) {
+                const node = props.grid.nodes[column][row];
                 
-        //         await dfs.runRecursive(row, column);
+                if(!node) continue;
 
-        //         if(dfs.totalIterations > 0) count++;
-        //     }
-        // }
+                if(node.getType() !== props.traverse || node.getState() === NodeState.Visited) continue;
+                
+                await dfs.runRecursive(delay, node);
+
+                if(dfs.totalIterations > 0) count++;
+            }
+        }
+
+        console.log(count);
 
         // if(props.done) props.done();
     };

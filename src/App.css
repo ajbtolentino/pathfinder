@@ -46,10 +46,10 @@
 .node-state-queued,
 .node-state-stacked {
   background-color: lightpink;
-  animation-name: enlarge;
-  outline: none;
 }
 
+.node-type-start.node-state-visited,
+.node-type-wall.node-state-visited,
 .node-state-visited {
   background-color: hotpink;
   outline: none;
@@ -77,10 +77,13 @@
 
 .node-type-wall {
   background-color: black;
+  outline: none;
   animation-name: enlarge;
   animation-fill-mode: forwards;
 }
 
+.node-type-start.node-path,
+.node-type-wall.node-path,
 .node-path {
   background-color: #10379e;
   animation-name: path;
