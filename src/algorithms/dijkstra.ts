@@ -1,113 +1,90 @@
 import { wait } from "@testing-library/user-event/dist/utils";
 import NeighborHelper from "../helpers/NeighborHelper";
-import INode, { NodeState, NodeType } from "../models/INode";
+import Grid from "../models/Grid";
+import Node, { NodeState, NodeType } from "../models/Node";
 
 export class Dijkstra {
     traverse: NodeType;
-    graph: INode[][];
-    totalIterations: number;
-    boundaries: boolean;
-    diagonalSearch: boolean;
-    path: INode[];
+    grid: Grid;
+    hasBorders: boolean;
+    includeDiagonal: boolean;
+    path: Node[];
     visited?: (row: number, column: number) => Promise<void>;
     dequeued?: (row: number, column: number) => Promise<void>;
     queued?: (row: number, column: number) => Promise<void>;
-    pathUpdated?: (path: INode[]) => Promise<void>;
+    pathUpdated?: (path: Node[]) => Promise<void>;
 
-    constructor(graph: INode[][], traverse: NodeType, boundaries: boolean, diagonalSearch: boolean) {
+    constructor(grid: Grid, traverse: NodeType, boundaries: boolean, diagonalSearch: boolean) {
         this.traverse = traverse;
-        this.totalIterations = 0;
-        this.boundaries = boundaries;
-        this.diagonalSearch = diagonalSearch;
+        this.hasBorders = boundaries;
+        this.includeDiagonal = diagonalSearch;
         this.path = [];
-        this.graph = [...graph.map(rowNodes => {
-            return [...rowNodes.map(node => {
-                const newNode: INode = {
-                    ...node, 
-                    distance: node.type === "start" ? 0 : Infinity,
-                    state: "unvisited"
-                };
-
-                return newNode;
-            })];
-        })];
+        this.grid = grid;
     }
 
-    search = async (startNode: INode) => {
-        const first = this.graph[startNode.row][startNode.column];
+    search = async (delay: number) => {
+        this.grid.resetAllNodes();
+        
+        const startNode = this.grid.getStartNode();
 
-        const queue = [first];
+        if(!startNode) return;
+        
+        startNode.gScore = 0;
+
+        const queue: Node[] = [startNode];
 
         while(queue.length > 0) {
-            const current = await this.dequeue(queue);
+            const currentNode = queue.pop();
 
-            if(!current) continue;
+            if(!currentNode) 
+                continue;
+                
+            if(currentNode.getState() === NodeState.Visited) 
+                continue;
 
-            this.path = [];
-            await this.drawPath(current);
+            if(currentNode.getType() === NodeType.Goal) {
+                this.drawPath(currentNode);
+                break;
+            };
 
-            if(current.state === "visited") continue;
-            if(current.type === "end") break;
+            currentNode.visit();
 
-            await this.visit(current);
-            await this.calculateDistance(queue, current);
+            this.calculateDistance(queue, currentNode);
             
-            this.totalIterations++;
+            await wait(delay);
         }
 
-        return this.graph;
+        return this.grid;
     };
     
-    drawPath = async (node: INode) => {
+    drawPath = (node: Node) => {
         if(!node) return;
 
         this.path.push(node);
 
         if(node.previous) this.drawPath(node.previous);
-
-        if(this.pathUpdated) await this.pathUpdated([...this.path]);
     }
 
-    calculateDistance = async (queue: INode[], current: INode) => {
-        const neighbors = NeighborHelper.getNeighbors(this.graph, current, this.boundaries, this.diagonalSearch); 
+    calculateDistance = (queue: Node[], currentNode: Node) => {
+        const neighbors = this.grid.getNeighbors(currentNode, this.hasBorders, this.includeDiagonal); 
 
         for(let neighbor of neighbors) {
-            const isValidType = neighbor.type === this.traverse || neighbor.type === "end" || neighbor.type === "start";
-            const isValid = isValidType && neighbor.state === "unvisited";
+            const isValidType = neighbor.getType() === this.traverse || 
+                                neighbor.getType() === NodeType.Goal || 
+                                neighbor.getType() === NodeType.Start;
+
+            const isValid = isValidType && neighbor.getState() === NodeState.Unvisited;
 
             if(!isValid) continue;
 
-            if(current.distance < neighbor.distance) {
-                neighbor.distance = current.distance + 1;
-                neighbor.previous = {...current};
+            if(currentNode.gScore < neighbor.gScore) {
+                neighbor.gScore = currentNode.gScore + 1;
+                neighbor.previous = currentNode;
             }
 
-            await this.queue(queue, neighbor);
+            neighbor.unshiftIn(queue);
         }
 
         return null;
-    }
-
-    dequeue = async (queue: INode[]) => {
-        const current = queue.sort(_ => _.fScore).pop();
-
-        if(current && this.dequeued)
-            await this.dequeued(current.row, current.column);
-
-        return current;
-    }
-
-    visit = async (node: INode) => {
-        node.state = "visited";
-
-        if(this.visited) 
-            await this.visited(node.row, node.column);
-    }
-
-    queue = async (stack: INode[], node: INode) => {
-        stack.unshift(node);
-
-        if(this.queued)
-            await this.queued(node.row, node.column);
     }
 }

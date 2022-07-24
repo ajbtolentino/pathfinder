@@ -46,6 +46,8 @@
 .node-state-queued,
 .node-state-stacked {
   background-color: lightpink;
+  animation-name: enlarge;
+  outline: none;
 }
 
 .node-state-visited {

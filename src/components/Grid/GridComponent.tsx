@@ -7,10 +7,7 @@ import { Dijkstra } from "../../algorithms/dijkstra";
 import { AStar } from "../../algorithms/aStar";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { wait } from "@testing-library/user-event/dist/utils";
 import { DepthFirstMaze } from "../../algorithms/depthFirstMaze";
-import { NodeStart } from "../Node/NodeStart";
-import { NodeEnd } from "../Node/NodeEnd";
 import Node, { NodeState, NodeType } from "../../models/Node";
 import Grid from "../../models/Grid";
 
@@ -97,9 +94,11 @@ const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridPro
     };
 
     const runDijkstra = async () => {
-        //     const alg: Dijkstra = new Dijkstra(grid, props.traverse, props.boundaries, props.diagonalSearch);
+        const alg: Dijkstra = new Dijkstra(props.grid, props.traverse, props.boundaries, props.diagonalSearch);
 
-        //     await alg.search(startNode);
+        await alg.search(delay);
+
+        drawPath(alg.path);
     };
 
     const runAStar = async () => {
@@ -107,7 +106,7 @@ const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridPro
 
         await alg.search(delay);
 
-        pathUpdated(alg.path);
+        drawPath(alg.path);
     };
 
     const runDfsMaze = async () => {
@@ -137,7 +136,7 @@ const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridPro
         // if(props.done) props.done();
     };
 
-    const pathUpdated = (nodes: Node[]) : void => {
+    const drawPath = (nodes: Node[]) : void => {
         const ids = nodes.map(n => `node-${n.x}-${n.y}`);
 
         ids.forEach((id, i) => {
@@ -188,10 +187,6 @@ const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridPro
                 <ButtonGroup sx={{m: 1, justifyContent: "center"}}>
                     <Button disabled={isRunning} onClick={runDfsMaze}>Create Maze</Button>
                 </ButtonGroup>
-            </FormGroup>
-            <FormGroup style={{display: "flex", flexDirection: "row", justifyContent: "start"}}>
-                <NodeStart size={props.nodeSize}/>
-                <NodeEnd size={props.nodeSize}/>
             </FormGroup>
             <MuiGrid tabIndex={0} container overflow={"visible"} width={"auto"} 
                         onKeyDown={(e) => setIsShiftPressed(e.key === "Shift")}
