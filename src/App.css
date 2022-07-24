@@ -10,7 +10,7 @@
 
 @keyframes enlarge {
   0% {
-    transform: scale(1.5);
+    transform: scale(1.1);
   }
   100% {
     transform: scale(1);
@@ -19,18 +19,132 @@
 
 @keyframes path {
   from {
-    transform: scale(0.5);
-    border-radius: 100%;
+    background-color: #10379e;
+    transform: scale(1.2);
   }
   to {
-    transform: scale(1);
     background-color: aquamarine;
   }
 }
 
 @keyframes visited {
+  from {
+    background-color: hotpink;
+  }
   to {
     background-color: #10379e;
+  }
+}
+
+@keyframes animate-north {
+  from {
+    background-color: transparent;
+    border-left: calc(var(--size) * .5px) solid transparent;
+    border-bottom: calc(var(--size) * 1px) solid aquamarine;
+    border-right: calc(var(--size) * .5px) solid transparent;
+  }
+  to {
+    background-color: aquamarine;
+    border-left: calc(var(--size) * .5px) solid transparent;
+    border-bottom: calc(var(--size) * 1px) solid aquamarine;
+    border-right: calc(var(--size) * .5px) solid transparent;
+  }
+}
+
+@keyframes animate-northeast {
+  from {
+    background-color: transparent;
+    border-top: calc(var(--size) * 1px) solid aquamarine;
+    border-left: calc(var(--size) * 1px) solid transparent;
+  }
+  to {
+    background-color: aquamarine;    
+    border-top: calc(var(--size) * 1px) solid aquamarine;
+    border-left: calc(var(--size) * 1px) solid transparent;
+  }
+}
+
+@keyframes animate-northwest {
+  from {
+    background-color: transparent;
+    border-top: calc(var(--size) * 1px) solid aquamarine;
+    border-right: calc(var(--size) * 1px) solid transparent;
+  }
+  to {
+    background-color: aquamarine;    
+    border-top: calc(var(--size) * 1px) solid aquamarine;
+    border-right: calc(var(--size) * 1px) solid transparent;
+  }
+}
+
+@keyframes animate-east {
+  from {
+    background-color: transparent;
+    border-top: calc(var(--size) * .5px) solid transparent;
+    border-left: calc(var(--size) * 1px) solid aquamarine;
+    border-bottom: calc(var(--size) * .5px) solid transparent;
+  }
+  to {
+    background-color: aquamarine;    
+    border-top: calc(var(--size) * .5px) solid transparent;
+    border-left: calc(var(--size) * 1px) solid aquamarine;
+    border-bottom: calc(var(--size) * .5px) solid transparent;
+  }
+}
+
+@keyframes animate-south {
+  from {
+    background-color: transparent;
+    border-left: calc(var(--size) * .5px) solid transparent;
+    border-right: calc(var(--size) * .5px) solid transparent;
+    border-top: calc(var(--size) * 1px) solid  aquamarine;
+  }
+  to {
+    background-color: aquamarine;
+    border-left: calc(var(--size) * .5px) solid transparent;
+    border-right: calc(var(--size) * .5px) solid transparent;
+    border-top: calc(var(--size) * 1px) solid  aquamarine;
+  }
+}
+
+@keyframes animate-southeast {
+  from {
+    background-color: transparent;
+    border-bottom: calc(var(--size) * 1px) solid  aquamarine;
+    border-left: calc(var(--size) * 1px) solid transparent;
+  }
+  to {
+    background-color: aquamarine;
+    border-bottom: calc(var(--size) * 1px) solid  aquamarine;
+    border-left: calc(var(--size) * 1px) solid transparent;
+  }
+}
+
+@keyframes animate-southwest {
+  from {
+    background-color: transparent;
+    border-bottom: calc(var(--size) * 1px) solid  aquamarine;
+    border-right: calc(var(--size) * 1px) solid transparent;
+  }
+  to {
+    background-color: aquamarine;
+    border-bottom: calc(var(--size) * 1px) solid  aquamarine;
+    border-right: calc(var(--size) * 1px) solid transparent;
+  }
+}
+
+@keyframes animate-west {
+  from {
+    background-color: transparent;
+    border-top: calc(var(--size) * .5px) solid transparent;
+    border-bottom: calc(var(--size) * .5px) solid transparent;
+    border-right: calc(var(--size) * 1px) solid  aquamarine;
+  }
+  to {
+    background-color: aquamarine;
+    border-top: calc(var(--size) * .5px) solid transparent;
+    border-bottom: calc(var(--size) * .5px) solid transparent;
+    border-right: calc(var(--size) * 1px) solid  aquamarine;
   }
 }
 
@@ -53,7 +167,6 @@
 .node-type-start.node-state-visited,
 .node-type-wall.node-state-visited,
 .node-state-visited {
-  background-color: hotpink;
   outline: none;
   animation-name: stretch, visited;
   animation-fill-mode: forwards;
@@ -84,12 +197,20 @@
   animation-fill-mode: forwards;
 }
 
-.node-type-start.node-path,
 .node-type-wall.node-path,
 .node-path {
   background-color: #10379e;
+  animation-name: path, var(--direction);
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-out;
+  animation-delay: calc(25ms * var(--index)) !important;
+  animation-duration: 500ms;
+}
+
+.node-type-start.node-path,
+.node-type-goal.node-path {
   animation-name: path;
   animation-fill-mode: forwards;
-  animation-delay: calc(10ms * var(--index)) !important;
-  animation-duration: 500ms;
+  animation-delay: calc(25ms * var(--index));
+  animation-duration: 1s;
 }

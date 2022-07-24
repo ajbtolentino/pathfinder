@@ -2,7 +2,7 @@ import { Checkbox, Drawer, FormControl, FormControlLabel, FormGroup, InputLabel,
 import { Box } from '@mui/system';
 import './App.css';
 import GridComponent, { GridAlgorithm } from './components/Grid/GridComponent';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { NodeType } from './models/Node';
 import { useGrid } from './hooks/useGrid';
 
@@ -20,9 +20,8 @@ const App = () => {
   const [traverse, setTraverse] = React.useState<NodeType>(NodeType.Empty);
   const [boundaries, setBoundaries] = React.useState<boolean>(true);
   const [diagonalSearch, setDiagonalSearch] = React.useState<boolean>(true);
-  const [animate, setAnimate] = React.useState<boolean>(true);
 
-  useEffect(() => {
+  React.useEffect(() => {
     create(rows, columns);
   }, [rows, columns]);
 
@@ -94,7 +93,6 @@ const App = () => {
             traverse={traverse}
             boundaries={boundaries}
             diagonalSearch={diagonalSearch}
-            animate={animate}
             algorithm={algorithm}
             />
       </Box>

@@ -1,7 +1,6 @@
 import React from "react";
 import Grid from "../models/Grid";
 import { NodeType } from "../models/Node";
-// import INode, { NodeType } from "../models/INode";
 
 export const useGrid = () => {
     const [grid, setGrid] = React.useState<Grid>(new Grid(0, 0));
@@ -11,7 +10,7 @@ export const useGrid = () => {
     };
 
     const create = (rows: number, columns: number) => {
-        setGrid(new Grid(rows, columns));
+        if(rows && columns) setGrid(new Grid(rows, columns));
     };
 
     const updateNode = (x: number, y: number, type: NodeType) => {

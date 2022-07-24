@@ -1,4 +1,4 @@
-import Node, { NodeState, NodeType } from "./Node";
+import Node, { NodeType } from "./Node";
 
 export default class Grid {
     nodes: Node[][];
@@ -60,7 +60,7 @@ export default class Grid {
         }
 
         return collection;
-    }
+    };
 
     resetAllNodes = () => {
         for(let x = 0; x < this.columns; x++) {
@@ -189,4 +189,29 @@ export default class Grid {
             path.setType(NodeType.Empty);
         }
     };
+
+    getDirection = (source: Node, destination: Node) : Direction | undefined => {
+        if(source.x === destination.x && source.y < destination.y) return Direction.North;
+        if(source.x > destination.x && source.y === destination.y) return Direction.East;
+        if(source.x === destination.x && source.y > destination.y) return Direction.South;
+        if(source.x < destination.x && source.y === destination.y) return Direction.West;
+
+        if(source.x > destination.x && source.y < destination.y) return Direction.NorthEast;
+        if(source.x < destination.x && source.y < destination.y) return Direction.NorthWest;
+        if(source.x > destination.x && source.y > destination.y) return Direction.SouthEast;
+        if(source.x < destination.x && source.y > destination.y) return Direction.SouthWest;
+
+        return undefined;
+    };
+}
+
+export enum Direction {
+    North = "north",
+    NorthEast = "northeast",
+    NorthWest = "northwest",
+    East = "east",
+    South = "south",
+    SouthEast = "southeast",
+    SouthWest = "southwest",
+    West = "west"
 }

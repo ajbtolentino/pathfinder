@@ -1,6 +1,6 @@
-import { Button, ButtonGroup, FormGroup, Grid as MuiGrid } from "@mui/material";
 import React from "react";
 import NodeComponent from "../Node/NodeComponent";
+import { Button, ButtonGroup, FormGroup, Grid as MuiGrid } from "@mui/material";
 import { DepthFirst } from "../../algorithms/depthFirst";
 import { BreadthFirst } from "../../algorithms/breadthFirst";
 import { Dijkstra } from "../../algorithms/dijkstra";
@@ -13,7 +13,7 @@ import Grid from "../../models/Grid";
 
 export type GridAlgorithm = "dfs-maze" | "dfs-stack" | "dfs-recursive" | "bfs" | "dijkstra" | "astar" | "count";
 
-export interface IPathfinderGridProps {
+export interface IGridComponentProps {
     grid: Grid;
     columns: number;
     rows: number;
@@ -21,14 +21,13 @@ export interface IPathfinderGridProps {
     delay: number;
     boundaries: boolean;
     diagonalSearch: boolean;
-    animate: boolean;
     traverse: NodeType;
     algorithm: GridAlgorithm;
     done?: () => void;
     reset?: () => void;
 }
 
-const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridProps) => {
+const GridComponent: React.FC<IGridComponentProps> = (props: IGridComponentProps) => {
     const [delay, setDelay] = React.useState<number>(props.delay);
     const [isRunning, setIsRunning] = React.useState<boolean>(false);
     const [isMouseDown, setIsMouseDown] = React.useState<boolean>(false);
@@ -144,20 +143,29 @@ const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridPro
     };
 
     const drawPath = (nodes: Node[]) : void => {
-        const ids = nodes.map(n => `node-${n.x}-${n.y}`);
-
         document.querySelectorAll(".node-path").forEach(element => {
-            if(!ids.includes(element.id)) {
-                element.classList.remove("node-path");
-            }
+            element.classList.remove("node-path");
         });
 
-        ids.forEach((id, i) => {
-            const element = document.getElementById(id);
-            if(element && !element.classList.contains("node-path")){
+        let previousNode: Node | undefined;
+
+        nodes.forEach((node, i) => {
+            const element = document.getElementById(`node-${node.x}-${node.y}`);
+
+            if(element) {
+                element.style.setProperty("--index", (nodes.length - i).toString());
+                element.style.setProperty("--size", props.nodeSize.toString());
                 element.classList.add("node-path");
-                element.style.setProperty("--index", (ids.length-i).toString());
             }
+            
+            if(previousNode && element){
+                const pathDirection = props.grid.getDirection(previousNode, node);
+                
+                if(node.getType() !== NodeType.Goal && pathDirection) 
+                    element.style.setProperty("--direction", `animate-${pathDirection}`) ;
+            }
+
+            previousNode = node;
         });
     };
 

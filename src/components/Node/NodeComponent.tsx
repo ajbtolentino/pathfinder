@@ -20,6 +20,7 @@ const NodeComponent: React.FC<INodeProps> = (props: INodeProps) => {
     React.useEffect(() => {
         setCurrentState(props.node.getState());
         setCurrentType(props.node.getType());
+        console.log(props.node.previous);
     }, [props.node]);
 
     const [{ isOver, canDrop }, drop] = useDrop(() => ({
