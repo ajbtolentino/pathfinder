@@ -1,6 +1,7 @@
 @keyframes stretch {
   0% {
-    transform: scale(0.1);
+    transform: scale(0.5);
+    border-radius: 100%;
   }
   100% {
     transform: scale(1);
@@ -18,7 +19,8 @@
 
 @keyframes path {
   from {
-    transform: scale(0.1);
+    transform: scale(0.5);
+    border-radius: 100%;
   }
   to {
     transform: scale(1);
