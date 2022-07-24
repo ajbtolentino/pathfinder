@@ -56,13 +56,19 @@
 .node-type-start {
   display: flex;
   color: green;
-  outline: solid thin black;
+  animation-name: enlarge;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease;
+  animation-duration: 1s;
 }
 
-.node-type-end {
+.node-type-goal {
   display: flex;
   color: brown !important;
-  outline: solid thin black;
+  animation-name: enlarge;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease;
+  animation-duration: 1s;
 }
 
 .node-type-wall {

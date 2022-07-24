@@ -29,7 +29,38 @@ export default class Grid {
         }
 
         this.nodes[0][0].setType(NodeType.Start);
+        this.nodes[this.columns - 1][this.rows - 1].setType(NodeType.Goal);
     };
+
+    randomizeStartNode = () => {
+        const emptyNodes = this.getAllNodesByType(NodeType.Empty);
+        const randomIndex = Math.floor(Math.random() * emptyNodes.length);
+        const chosenNode = emptyNodes[randomIndex];
+
+        this.updateNode(chosenNode.x, chosenNode.y, NodeType.Start);
+    };
+
+    randomizeEndNode = () => {
+        const emptyNodes = this.getAllNodesByType(NodeType.Empty);
+        const randomIndex = Math.floor(Math.random() * emptyNodes.length);
+        const chosenNode = emptyNodes[randomIndex];
+
+        this.updateNode(chosenNode.x, chosenNode.y, NodeType.Goal);
+    };
+
+    getAllNodesByType = (type: NodeType) => {
+        const collection: Node[] = [];
+
+        for(let x = 0; x < this.columns; x++) {
+            for(let y = 0; y < this.rows; y++) {
+                const node = this.nodes[x][y];
+                if(node && node.getType() === type)
+                    collection.push(node);
+            }
+        }
+
+        return collection;
+    }
 
     resetAllNodes = () => {
         for(let x = 0; x < this.columns; x++) {
