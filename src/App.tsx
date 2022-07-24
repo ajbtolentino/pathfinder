@@ -10,9 +10,9 @@ const drawerWidth = 260;
 
 const App = () => {
   const [algorithm, setAlgorithm] = React.useState<GridAlgorithm>("astar");
-  const [rows, setRows] = React.useState<number>(29);
-  const [columns, setColumns] = React.useState<number>(55);
-  const [nodeSize, setNodeSize] = React.useState<number>(20);
+  const [rows, setRows] = React.useState<number>(21);
+  const [columns, setColumns] = React.useState<number>(31);
+  const [nodeSize, setNodeSize] = React.useState<number>(30);
 
   const { grid, create } = useGrid();
 
@@ -80,18 +80,18 @@ const App = () => {
           component={"main"}
           sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}          
         >
-        <GridComponent 
-          grid={grid}
-          rows={rows} 
-          columns={columns} 
-          nodeSize={nodeSize}
-          delay={delay}
-          traverse={traverse}
-          boundaries={boundaries}
-          diagonalSearch={diagonalSearch}
-          animate={animate}
-          algorithm={algorithm}
-        />
+            <GridComponent 
+            grid={grid}
+            rows={rows} 
+            columns={columns} 
+            nodeSize={nodeSize}
+            delay={delay}
+            traverse={traverse}
+            boundaries={boundaries}
+            diagonalSearch={diagonalSearch}
+            animate={animate}
+            algorithm={algorithm}
+            />
       </Box>
     </Box>
   );

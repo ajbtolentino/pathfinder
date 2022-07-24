@@ -1,7 +1,6 @@
 import { Button, ButtonGroup, FormGroup, Grid as MuiGrid } from "@mui/material";
-import React, { useEffect, useState, memo, useMemo } from "react";
-import {NodeComponent as NodeComponent} from "../Node/NodeComponent";
-import { useGrid } from "../../hooks/useGrid";
+import React from "react";
+import NodeComponent from "../Node/NodeComponent";
 import { DepthFirst } from "../../algorithms/depthFirst";
 import { BreadthFirst } from "../../algorithms/breadthFirst";
 import { Dijkstra } from "../../algorithms/dijkstra";
@@ -32,13 +31,13 @@ export interface IPathfinderGridProps {
     reset?: () => void;
 }
 
-export const GridComponent = (props: IPathfinderGridProps) => {
+const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridProps) => {
     const [delay, setDelay] = React.useState<number>(props.delay);
-    const [isRunning, setIsRunning] = useState<boolean>(false);
-    const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
-    const [isShiftPressed, setIsShiftPressed] = useState<boolean>(false);
+    const [isRunning, setIsRunning] = React.useState<boolean>(false);
+    const [isMouseDown, setIsMouseDown] = React.useState<boolean>(false);
+    const [isShiftPressed, setIsShiftPressed] = React.useState<boolean>(false);
 
-    useEffect(() => {
+    React.useEffect(() => {
         setDelay(props.delay);
     }, [props.delay]);
 
@@ -213,4 +212,4 @@ export const GridComponent = (props: IPathfinderGridProps) => {
     );
 };
 
-export default memo(GridComponent);
+export default GridComponent;

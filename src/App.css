@@ -1,7 +1,15 @@
 @keyframes stretch {
   0% {
-    transform: scale(0.5);
-    outline: none;
+    transform: scale(0.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes enlarge {
+  0% {
+    transform: scale(1.5);
   }
   100% {
     transform: scale(1);
@@ -9,41 +17,37 @@
 }
 
 @keyframes path {
-  0% {
-    transform: scale(.5);
-    background-color: #10379e;
+  from {
+    transform: scale(0.1);
   }
-  100% {
+  to {
     transform: scale(1);
     background-color: aquamarine;
   }
 }
 
 @keyframes visited {
-  from {
-    background-color: hotpink;
-  }
   to {
     background-color: #10379e;
   }
 }
 
 .node {
-  outline: thin solid black;
-  transition: all 100ms;
-  animation-duration: 100ms;
+  animation-duration: 500ms;
   animation-timing-function: ease;
+}
+
+.node-type-empty {
+  outline: solid thin black;
 }
 
 .node-state-queued,
 .node-state-stacked {
   background-color: lightpink;
-  outline: none;
-  animation-name: stretch;
-  animation-fill-mode: forwards;
 }
 
 .node-state-visited {
+  background-color: hotpink;
   outline: none;
   animation-name: stretch, visited;
   animation-fill-mode: forwards;
@@ -52,17 +56,19 @@
 .node-type-start {
   display: flex;
   color: green;
+  outline: solid thin black;
 }
 
 .node-type-end {
   display: flex;
   color: brown !important;
+  outline: solid thin black;
 }
 
 .node-type-wall {
   background-color: black;
   animation-name: enlarge;
-  outline: none;
+  animation-fill-mode: forwards;
 }
 
 .node-path {
@@ -70,5 +76,5 @@
   animation-name: path;
   animation-fill-mode: forwards;
   animation-delay: calc(10ms * var(--index)) !important;
-  animation-duration: 200ms;
+  animation-duration: 500ms;
 }

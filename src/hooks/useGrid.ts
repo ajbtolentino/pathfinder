@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import React from "react";
 import Grid from "../models/Grid";
-import Node, { NodeType } from "../models/Node";
+import { NodeType } from "../models/Node";
 // import INode, { NodeType } from "../models/INode";
 
 export const useGrid = () => {
-    const [grid, setGrid] = useState<Grid>(new Grid(0, 0));
+    const [grid, setGrid] = React.useState<Grid>(new Grid(0, 0));
 
     const reset = () => {
         grid.resetAllNodes();

@@ -1,5 +1,5 @@
 import { Grid } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { memo } from "react";
 import { useDrop } from "react-dnd";
 import Node, { NodeState, NodeType } from "../../models/Node";
 import { NodeEnd } from "./NodeEnd";
@@ -13,7 +13,7 @@ export interface INodeProps {
     onTypeDropped: (type: NodeType) => void;
 };
 
-export const NodeComponent = (props: INodeProps) => {
+const NodeComponent: React.FC<INodeProps> = (props: INodeProps) => {
     const [currentState, setCurrentState] = React.useState<NodeState>(props.node.getState());
     const [currentType, setCurrentType] = React.useState<NodeType>(NodeType.Empty);
 
@@ -96,4 +96,4 @@ export const NodeComponent = (props: INodeProps) => {
     );
 };
 
-export default NodeComponent;
+export default memo(NodeComponent);
