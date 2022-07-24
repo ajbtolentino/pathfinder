@@ -212,5 +212,5 @@
   animation-name: path;
   animation-fill-mode: forwards;
   animation-delay: calc(25ms * var(--index));
-  animation-duration: 1s;
+  animation-duration: 200ms;
 }
