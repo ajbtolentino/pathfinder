@@ -1,5 +1,4 @@
 import { wait } from "@testing-library/user-event/dist/utils";
-import NeighborHelper from "../helpers/NeighborHelper";
 import Grid from "../models/Grid";
 import Node, { NodeState, NodeType } from "../models/Node";
 
@@ -23,8 +22,6 @@ export class Dijkstra {
     }
 
     search = async (delay: number) => {
-        this.grid.resetAllNodes();
-        
         const startNode = this.grid.getStartNode();
 
         if(!startNode) return;
@@ -57,7 +54,7 @@ export class Dijkstra {
         return this.grid;
     };
     
-    drawPath = (node: Node) => {
+    private drawPath = (node: Node) => {
         if(!node) return;
 
         this.path.push(node);
@@ -65,7 +62,7 @@ export class Dijkstra {
         if(node.previous) this.drawPath(node.previous);
     }
 
-    calculateDistance = (queue: Node[], currentNode: Node) => {
+    private calculateDistance = (queue: Node[], currentNode: Node) => {
         const neighbors = this.grid.getNeighbors(currentNode, this.hasBorders, this.includeDiagonal); 
 
         for(let neighbor of neighbors) {

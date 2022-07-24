@@ -1,5 +1,4 @@
 import { wait } from "../helpers/WaitHelper";
-import NeighborHelper from "../helpers/NeighborHelper";
 import Grid from "../models/Grid";
 import Node, { NodeState, NodeType } from "../models/Node";
 

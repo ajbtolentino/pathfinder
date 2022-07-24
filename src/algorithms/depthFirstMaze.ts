@@ -45,6 +45,7 @@ export class DepthFirstMaze {
 
             if(delay) await wait(delay);
         }
+        
         this.grid.resetAllNodes();
         this.grid.randomizeStartNode();
         this.grid.randomizeEndNode();

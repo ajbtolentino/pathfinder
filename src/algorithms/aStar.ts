@@ -1,5 +1,4 @@
 import { wait } from "@testing-library/user-event/dist/utils";
-import NeighborHelper from "../helpers/NeighborHelper";
 import Grid from "../models/Grid";
 import Node, { NodeState, NodeType } from "../models/Node";
 
@@ -19,8 +18,6 @@ export class AStar {
     }
 
     search = async (delay: number) : Promise<void> => {
-        this.grid.resetAllNodes();
-
         const startNode = this.grid.getStartNode();
         const endNode = this.grid.getEndNode();
 

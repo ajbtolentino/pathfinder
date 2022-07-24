@@ -43,6 +43,8 @@
   outline: solid thin black;
 }
 
+.node-type-wall.node-state-queued,
+.node-type-wall.node-state-stacked,
 .node-state-queued,
 .node-state-stacked {
   background-color: lightpink;

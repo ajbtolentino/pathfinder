@@ -39,6 +39,8 @@ const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridPro
     }, [props.delay]);
 
     const runAlgorithm = async () => {
+        props.grid.resetAllNodes();
+
         setIsRunning(true);
 
         switch(props.algorithm) {
@@ -72,7 +74,6 @@ const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridPro
 
     const handleClear = () => {
         if(props.reset) props.reset();
-        // initialize();
     };
 
     const runDfsStack = async () => {
@@ -82,8 +83,6 @@ const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridPro
     };
 
     const runDfsRecursive = async () => {
-        props.grid.resetAllNodes();
-        
         const alg: DepthFirst = new DepthFirst(props.grid, props.traverse, props.boundaries);
 
         await alg.runRecursive(delay);
@@ -125,8 +124,6 @@ const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridPro
         const dfs = new DepthFirst(props.grid, props.traverse, props.boundaries);
         let count = 0;
 
-        props.grid.resetAllNodes();
-
         for(let row = 0; row < props.grid.rows; row++){
             for(let column = 0; column < props.grid.columns; column++) {
                 const node = props.grid.nodes[column][row];
@@ -148,6 +145,12 @@ const GridComponent: React.FC<IPathfinderGridProps> = (props: IPathfinderGridPro
 
     const drawPath = (nodes: Node[]) : void => {
         const ids = nodes.map(n => `node-${n.x}-${n.y}`);
+
+        document.querySelectorAll(".node-path").forEach(element => {
+            if(!ids.includes(element.id)) {
+                element.classList.remove("node-path");
+            }
+        });
 
         ids.forEach((id, i) => {
             const element = document.getElementById(id);

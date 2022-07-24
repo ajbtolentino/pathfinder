@@ -1,6 +1,6 @@
 import { wait } from "@testing-library/user-event/dist/utils";
 import Grid from "../models/Grid";
-import Node, { NodeState, NodeType } from "../models/Node";
+import { NodeState, NodeType } from "../models/Node";
 
 export class BreadthFirst {
     traverse: NodeType;
@@ -16,13 +16,11 @@ export class BreadthFirst {
     };
 
     scan = async (delay: number) => {
-        this.grid.resetAllNodes();
-
         const startNode = this.grid.getStartNode();
 
         if(!startNode) return;
         
-        const queue = [this.grid.nodes[startNode.x][startNode.y]];
+        const queue = [startNode];
 
         while(queue.length > 0) {
             const current = queue.pop();
