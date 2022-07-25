@@ -10,7 +10,7 @@
 
 @keyframes enlarge {
   0% {
-    transform: scale(1.1);
+    transform: scale(1.2);
   }
   100% {
     transform: scale(1);
@@ -18,10 +18,6 @@
 }
 
 @keyframes path {
-  from {
-    background-color: #10379e;
-    transform: scale(1.2);
-  }
   to {
     background-color: aquamarine;
   }
@@ -38,10 +34,10 @@
 
 @keyframes animate-north {
   from {
-    background-color: transparent;
-    border-left: calc(var(--size) * .5px) solid transparent;
+    background-color: #10379e;
+    border-left: calc(var(--size) * .5px) solid #10379e;
     border-bottom: calc(var(--size) * 1px) solid aquamarine;
-    border-right: calc(var(--size) * .5px) solid transparent;
+    border-right: calc(var(--size) * .5px) solid #10379e;
   }
   to {
     background-color: aquamarine;
@@ -53,9 +49,9 @@
 
 @keyframes animate-northeast {
   from {
-    background-color: transparent;
+    background-color: #10379e;
     border-top: calc(var(--size) * 1px) solid aquamarine;
-    border-left: calc(var(--size) * 1px) solid transparent;
+    border-left: calc(var(--size) * 1px) solid #10379e;
   }
   to {
     background-color: aquamarine;    
@@ -66,9 +62,9 @@
 
 @keyframes animate-northwest {
   from {
-    background-color: transparent;
+    background-color: #10379e;
     border-top: calc(var(--size) * 1px) solid aquamarine;
-    border-right: calc(var(--size) * 1px) solid transparent;
+    border-right: calc(var(--size) * 1px) solid #10379e;
   }
   to {
     background-color: aquamarine;    
@@ -79,10 +75,10 @@
 
 @keyframes animate-east {
   from {
-    background-color: transparent;
-    border-top: calc(var(--size) * .5px) solid transparent;
+    background-color: #10379e;
+    border-top: calc(var(--size) * .5px) solid #10379e;
     border-left: calc(var(--size) * 1px) solid aquamarine;
-    border-bottom: calc(var(--size) * .5px) solid transparent;
+    border-bottom: calc(var(--size) * .5px) solid #10379e;
   }
   to {
     background-color: aquamarine;    
@@ -94,9 +90,9 @@
 
 @keyframes animate-south {
   from {
-    background-color: transparent;
-    border-left: calc(var(--size) * .5px) solid transparent;
-    border-right: calc(var(--size) * .5px) solid transparent;
+    background-color: #10379e;
+    border-left: calc(var(--size) * .5px) solid #10379e;
+    border-right: calc(var(--size) * .5px) solid #10379e;
     border-top: calc(var(--size) * 1px) solid  aquamarine;
   }
   to {
@@ -109,9 +105,9 @@
 
 @keyframes animate-southeast {
   from {
-    background-color: transparent;
+    background-color: #10379e;
     border-bottom: calc(var(--size) * 1px) solid  aquamarine;
-    border-left: calc(var(--size) * 1px) solid transparent;
+    border-left: calc(var(--size) * 1px) solid #10379e;
   }
   to {
     background-color: aquamarine;
@@ -122,9 +118,9 @@
 
 @keyframes animate-southwest {
   from {
-    background-color: transparent;
+    background-color: #10379e;
     border-bottom: calc(var(--size) * 1px) solid  aquamarine;
-    border-right: calc(var(--size) * 1px) solid transparent;
+    border-right: calc(var(--size) * 1px) solid #10379e;
   }
   to {
     background-color: aquamarine;
@@ -135,9 +131,9 @@
 
 @keyframes animate-west {
   from {
-    background-color: transparent;
-    border-top: calc(var(--size) * .5px) solid transparent;
-    border-bottom: calc(var(--size) * .5px) solid transparent;
+    background-color: #10379e;
+    border-top: calc(var(--size) * .5px) solid #10379e;
+    border-bottom: calc(var(--size) * .5px) solid #10379e;
     border-right: calc(var(--size) * 1px) solid  aquamarine;
   }
   to {
@@ -201,15 +197,14 @@
 .node-path {
   background-color: #10379e;
   animation-name: path, var(--direction);
-  animation-fill-mode: forwards;
   animation-timing-function: ease-out;
   animation-delay: calc(25ms * var(--index)) !important;
-  animation-duration: 500ms;
+  animation-duration: 200ms;
 }
 
 .node-type-start.node-path,
 .node-type-goal.node-path {
-  animation-name: path;
+  animation-name: path, enlarge;
   animation-fill-mode: forwards;
   animation-delay: calc(25ms * var(--index));
   animation-duration: 200ms;
