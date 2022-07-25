@@ -48,7 +48,7 @@ export class Dijkstra {
 
             this.calculateDistance(queue, currentNode);
             
-            await wait(delay);
+            if(delay) await wait(delay);
         }
 
         return this.grid;

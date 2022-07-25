@@ -189,6 +189,7 @@ const GridComponent: React.FC<IGridComponentProps> = (props: IGridComponentProps
                 node={node}
                 size={props.nodeSize} 
                 isMouseDown={isMouseDown}
+                delay={props.delay}
                 onToggleEmpty={() => onToggleEmpty(node)}
                 onTypeDropped={(type) => onTypeDropped(node, type)}
         />

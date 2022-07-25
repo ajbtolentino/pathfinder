@@ -9,6 +9,7 @@ export interface INodeProps {
     node: Node;
     size: number;
     isMouseDown: boolean;
+    delay: number;
     onToggleEmpty: () => void;
     onTypeDropped: (type: NodeType) => void;
 };
@@ -84,6 +85,7 @@ const NodeComponent: React.FC<INodeProps> = (props: INodeProps) => {
                 height={props.size}     
                 width={props.size}          
                 onClick={() => props.onToggleEmpty()} 
+                style={{"--animation-duration": props.delay} as React.CSSProperties}
                 onMouseEnter={onMouseEnter} >
                 {
                     currentType === NodeType.Start && <NodeStart size={props.size}/>

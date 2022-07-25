@@ -145,7 +145,7 @@
 }
 
 .node {
-  animation-duration: 500ms;
+  animation-duration: calc(50ms * var(--animation-duration));
   animation-timing-function: ease;
 }
 
@@ -174,7 +174,7 @@
   animation-name: enlarge;
   animation-fill-mode: forwards;
   animation-timing-function: ease;
-  animation-duration: 1s;
+  animation-duration: var(--animation-duration);
 }
 
 .node-type-goal {
@@ -183,7 +183,7 @@
   animation-name: enlarge;
   animation-fill-mode: forwards;
   animation-timing-function: ease;
-  animation-duration: 1s;
+  animation-duration: var(--animation-duration);
 }
 
 .node-type-wall {
@@ -198,14 +198,14 @@
   background-color: #10379e;
   animation-name: path, var(--direction);
   animation-timing-function: ease-out;
-  animation-delay: calc(25ms * var(--index)) !important;
-  animation-duration: 200ms;
+  animation-delay: calc(5ms * var(--animation-duration) * var(--index)) !important;
+  animation-duration: calc(20ms * var(--animation-duration));
 }
 
 .node-type-start.node-path,
 .node-type-goal.node-path {
   animation-name: path, enlarge;
   animation-fill-mode: forwards;
-  animation-delay: calc(25ms * var(--index));
-  animation-duration: 200ms;
+  animation-delay: calc(5ms * var(--animation-duration) * var(--index));
+  animation-duration: var(20ms * --animation-duration);
 }
